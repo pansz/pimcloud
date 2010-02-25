@@ -27,7 +27,7 @@ About client:
 
     libmycloud.so 为 32 位 Linux 使用，64 位 Linux 用户请从源代码编译。
 
-    mycloud 为 python 版本，任何支持 python 的平台可使用。
+    mycloud.py 为 python 版本，任何支持 python 的平台可使用。
 
     三者选一即可，不需全部使用。
 
