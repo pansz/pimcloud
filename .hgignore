@@ -1,4 +1,4 @@
-\.pyc
+\.pyc$
 mycloud/server/user.txt
 mycloud/util/abc1.txt
 mycloud/util/abc2.txt
