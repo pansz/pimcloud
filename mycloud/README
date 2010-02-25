@@ -25,7 +25,7 @@ About client:
 
     libmycloud.dll 为 Windows 使用
 
-    libmycloud.so 为 32 位 Linux 使用
+    libmycloud.so 为 32 位 Linux 使用，64 位 Linux 用户请从源代码编译。
 
     mycloud 为 python 版本，任何支持 python 的平台可使用。
 
@@ -36,10 +36,14 @@ About client-src:
     如果需要其它平台的 libmycloud，可使用源代码自行编译。
 
     使用 Cygwin 1.7 以上编译 windows 版本，install 将安装至 ~/vimfiles/plugin
-    make -f Makefile.cygwin
-    make -f Makefile.cygwin install
 
-    使用其他平台编译，需要手动修改一下 CFLAGS 参数，install 将安装至 ~/.vim/plugin。
-    make -f Makefile.linux
-    make -f Makefile.linux install
+    ln -sf Makefile.cygwin Makefile
+    make
+    make install
+
+    使用其他平台编译，可能需要手动修改一下 CFLAGS 参数，install 将安装至 ~/.vim/plugin。
+
+    ln -sf Makefile.linux Makefile
+    make
+    make install
 
