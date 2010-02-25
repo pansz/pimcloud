@@ -1,2 +1,2 @@
 cd ../server && rm *3.txt *4.txt && /home/poet/share/google_appengine/appcfg.py update .
-hg update
+hg revert .
