@@ -1,0 +1,109 @@
+<html>
+    <!--
+    mainpage for mycloud
+
+    Copyright (C) 2010  Pan, Shi Zhu
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    -->
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Personal Input Method Cloud</title>
+    </head>
+    <body>
+        <h1>自己的输入法</h1>
+        经过一番磨练和研究，我们立志于创建自己的输入法，因为，自己的输入法，才是最好的输入法。
+        我们的输入法目标：
+        <li>对整个后端引擎都允许最大程度的自由定制</li>
+        <li>前端后端分离模式，输入法引擎可适用于不同的前端，例如VimIM，ibus，
+        Windows</li>
+        <li>开源，协作，共享</li>
+
+        <h2>VimIM 输入法插件的使用</h2>
+        <p>
+        目前我们自己的输入法支持 VimIM 输入法插件，是为了让用户可以自定义输入法引擎后端而设计的。
+        输入法插件让设计输入法的用户自由的对输入法引擎进行定制，是高级用户的理想选择。</p>
+        <p>
+        <h2>本地插件</h2>
+        插件可以下载到本地并创建为本地服务器，此种方法输入比较流畅。
+        而且，由于插件单独启用服务器，避免了每次启动 vim 时载入字库造成的减慢
+        vim 启动速度问题。使用方法如下：
+        <li>下载插件：http://code.google.com/p/vimim/downloads/list</li>
+        <li>创建 vim 的插件目录下的 mycloud 目录，<br>
+        Linux/Mac/Cygwin 下看起来是 ~/.vim/plugin/mycloud/，Windows 下就是
+        ~/vimfiles/plugin/mycloud/<br>
+        你可使用 mkdir -p ~/.vim/plugin/mycloud 创建此目录</li>
+        <li>解压插件：
+        cd ~/.vim/plugin/mycloud/ &amp;&amp;
+        tar -jxf path-to-your-file/*cloud.tar.bz2
+        </li>
+        <li>单独开一个终端窗口，启动插件服务器：
+        ~/.vim/plugin/mycloud/??server<br>
+        其中 ?? 为你所需要的服务器名称，请参见后面的输入法引擎统一简称表<br>
+        Windows 下推荐安装 cygwin 并使用 cygwin 版本的 python，如果安装 windows 版本的 python，
+        需要把 server 服务程序的名称加上 .py ，然后双击启动该程序，并选择运行程序。
+        </li>
+        <li>在 vimrc 中设置 let
+        g:vimim_cloud_plugin=$HOME."/.vim/plugin/mycloud/mycloud"<br>
+        注意这里可以带一个 IP 地址作为参数，允许连接到局域网内的其他服务器。<br>
+        例如：let g:vimim_cloud_plugin=$HOME."/.vim/plugin/mycloud/mycloud 192.168.0.1"<br>
+        如果你使用其他语言制作解析器，例如 perl，可以写成如下形式：<br>
+        let g:vimim_cloud_plugin="perl ".$HOME."/.vim/plugin/mycloud/mycloud"<br>
+        </li>
+        <li>启动 vim </li>
+        <h2>远程插件</h2>
+        如果你访问 appspot.com 站点的速度比较理想，也可以直接使用远程插件。
+        使用方法如下：
+        <li>在 vimrc 中设置 g:vimim_cloud_pim=http://pim-cloud.appspot.com/??
+        ，其中 ?? 是输入法简称，参见下节。</li>
+        <li>启动 vim </li>
+        <h2>制作自己的输入法插件</h2>
+        如果你制作自己的输入法插件，则不限于使用 python 实现，
+        以全拼“我有一个梦”为例，
+        插件与 vimim 之间的接口定义如下：
+        <li>输入： mycloud/mycloud woyouyigemeng</li>
+        <p>此处意味着，需要制作一个名为 mycloud 的执行程序，
+        具体使用任何语言均可，其接受的参数为键盘输入的字符序列。</p>
+        <li>输出： "我有一个梦\t13\t2344\n我有一个\t9\t2380\n"</li>
+        <p>简单解释是，输出的汉字必须以 utf-8 序列输出，不同的匹配项之间使用 \n 分割，
+        单一项目间使用 \t 分割，第二个数字表示具体匹配到的长度，
+        例如“我有一个”实际只匹配了 woyouyige，那么只匹配 9 个字符。
+        第三个字段表示提示信息，可以为任意想要的输出。</p>
+        <li>插件与vimim之间使用命令行参数和标准输出为接口，方便使用。</li>
+        <li>插件与vimim之间还需要交互以下几个信息：</li>
+        <li>输入：mycloud __isvalid<br>输出："True\t9\t__\n"</li>
+        <li>输入：mycloud __getname<br>输出："输入法名称\t9\t__\n"</li>
+        <li>输入：mycloud __getkeychars<br>输出："[a-z0-9]\t13\t__\n"<br>
+        这里的输出是一个正则表达式匹配串，用于描述有效码组</li>
+
+        <h2>输入法引擎的统一名称和简称</h2>
+        为了统一，输入法引擎使用下面的简称：
+        <li>qp 全拼简拼</li>
+        <li>abc 智能ABC双拼</li>
+        <li>（以下在计划中，但暂未实现）</li>
+        <li>ms 微软拼音双拼</li>
+        <li>nature 自然码双拼</li>
+        <li>purple 紫光双拼</li>
+        <li>plusplus 拼音加加双拼</li>
+        <li>wb86 五笔86</li>
+        <li>wb98 五笔98</li>
+        <li>zy 注音</li>
+        <li>cj5 仓颉五代</li>
+        <h3>其他说明</h3>
+        若有一切疑问，请注册 vimim 的邮件列表：http://groups.google.com/group/vimim
+    </body>
+
+</html>
+

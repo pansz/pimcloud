@@ -1,0 +1,45 @@
+===============================
+This file is utf-8 encoding!
+===============================
+
+About mycloud:
+
+    mycloud is the official VimIM Server and Client
+
+    mycloud is released under GNU GPL, see the file named LICENSE
+
+    相关说明参见 http://pim-cloud.appspot.com/
+
+About server:
+
+    你可以在任何支持 python 平台上启用 server，并使用你所知道的任何优化技术（例如 pysco JIT）优化 server 的性能。
+    server 与 client 可以不在一台主机上，这降低了 client 对性能的要求。
+
+    你可以编辑 user.txt 用于自定义词库，该文件的格式为：
+    每行以英文字母开头，后面使用空格分隔每个字符，结尾使用 Unix 行结尾。
+    词库文件无须象 vimim 词库文件中一样 sort u，但是不介意您进行排序。
+
+    注意，与 vimim 不同的是，本词库必须使用 unix 行结束符（在 vim 中 :set ff=unix）。
+
+About client:
+
+    libmycloud.dll 为 Windows 使用
+
+    libmycloud.so 为 32 位 Linux 使用
+
+    mycloud 为 python 版本，任何支持 python 的平台可使用。
+
+    三者选一即可，不需全部使用。
+
+About client-src:
+
+    如果需要其它平台的 libmycloud，可使用源代码自行编译。
+
+    使用 Cygwin 1.7 以上编译 windows 版本，install 将安装至 ~/vimfiles/plugin
+    make -f Makefile.cygwin
+    make -f Makefile.cygwin install
+
+    使用其他平台编译，需要手动修改一下 CFLAGS 参数，install 将安装至 ~/.vim/plugin。
+    make -f Makefile.linux
+    make -f Makefile.linux install
+
