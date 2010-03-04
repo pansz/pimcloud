@@ -23,6 +23,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 import algo
 import urllib
 import string
+import pwdtool
 
 def myrot13(input):
     a = "12345abcdefghijklmABCDEFGHIJKLM"
@@ -76,12 +77,28 @@ class Wubi(webapp.RequestHandler):
         for k, h, v in algo.parse(myencode(keyb)):
             self.response.out.write(mydecode(k,h,v))
 
+class PwdTool(webapp.RequestHandler):
+    def get(self, keyb):
+        self.response.headers['Content-Type'] = 'text/plain'
+        strkey = urllib.unquote(keyb)
+        sp = strkey.partition("@")
+        if len(sp[1]) == 0:
+            op = pwdtool.public_encrypt(pwdtool.KEYSTR, sp[0])
+        elif len(sp[0]) != 0:
+            op = pwdtool.public_encrypt(sp[2], sp[0])
+        else:
+            op = []
+        for item in op:
+            self.response.out.write("%s\t%s\t%s\t%s\t%s\t%s\n" % \
+                (item[0][0], item[0][1], item[0][2], item[1][0], item[1][1], item[1][2]))
+
 application = webapp.WSGIApplication([
                                      ('/', MainPage),
                                      ('/qp/(.*)', QuanPin),
                                      ('/abc/(.*)', ShuangPinAbc),
                                      ('/ms/(.*)', ShuangPinMs),
                                      ('/wb/(.*)', Wubi),
+                                     ('/pwd/(.*)', PwdTool),
                                          ],
                                      debug=True)
 

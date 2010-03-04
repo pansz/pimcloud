@@ -1,4 +1,5 @@
 \.pyc$
+\.swp$
 mycloud/server/user.txt
 mycloud/util/abc1.txt
 mycloud/util/abc2.txt
@@ -13,3 +14,5 @@ mycloud/util/ms1.txt
 mycloud/util/ms2.txt
 mycloud/util/ms3.txt
 mycloud/util/ms4.txt
+mycloud/client-src/libvimim.so
+mycloud/client-src/Makefile
