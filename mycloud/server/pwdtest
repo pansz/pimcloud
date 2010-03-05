@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+# coding=utf-8
+
+import mypwd
+import sys
+
+def printopitem(op):
+    x = 0
+    for item in op:
+        print "%d %s\t%d %s\t%d %s\t%d %s\t%d %s\t%d %s" % \
+            (x, item[0], x+5, item[1], x+10, item[2], \
+            x+15, item[3], x+20, item[4], x+25, item[5])
+        x += 1
+
+def main():
+    argc = len(sys.argv)
+    if argc <= 1:
+        if len(sys.argv[0]) == 0:
+            op = mypwd.public_encrypt(mypwd.KEYSTR, "python")
+        else:
+            op = mypwd.public_encrypt(mypwd.KEYSTR, sys.argv[0])
+        printopitem(op)
+    elif argc == 2:
+        op = mypwd.parse(sys.argv[1])
+        for x in range(1,6):
+            print "%d %s\t%d %s\t%d %s\t%d %s\t%d %s\t%d %s" % \
+                (x, op[x-1][0], x+5, op[x+4][0], x+10, op[x+9][0], \
+                 x+15, op[x+14][0], x+20, op[x+19][0], x+25, op[x+24][0])
+    elif argc >= 3:
+        op = mypwd.public_encrypt(sys.argv[2], sys.argv[1])
+        printopitem(op)
+
+if __name__ == "__main__":
+    main()
+

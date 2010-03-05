@@ -23,7 +23,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 import algo
 import urllib
 import string
-import pwdtool
+import mypwd
 
 def myrot13(input):
     a = "12345abcdefghijklmABCDEFGHIJKLM"
@@ -94,9 +94,9 @@ class PwdTool(webapp.RequestHandler):
             op = []
             self.response.out.write("Empty\n")
         elif len(sp[1]) == 0 or len(sp[2]) == 0:
-            op = pwdtool.public_encrypt(pwdtool.KEYSTR, sp[0])
+            op = mypwd.public_encrypt(mypwd.KEYSTR, sp[0])
         else:
-            op = pwdtool.public_encrypt(sp[2], sp[0])
+            op = mypwd.public_encrypt(sp[2], sp[0])
         self.response.out.write("<pre>\n")
         for item in op:
             self.response.out.write("%s\t%s\t%s\t%s\t%s\t%s\n" % \
