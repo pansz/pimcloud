@@ -79,18 +79,31 @@ class Wubi(webapp.RequestHandler):
 
 class PwdTool(webapp.RequestHandler):
     def get(self, keyb):
-        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.headers['Content-Type'] = 'text/html'
+        self.response.out.write("""
+    <html
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Personal Password Tool</title>
+    </head>
+    <body>
+        """)
         strkey = urllib.unquote(keyb)
         sp = strkey.partition("@")
-        if len(sp[1]) == 0:
-            op = pwdtool.public_encrypt(pwdtool.KEYSTR, sp[0])
-        elif len(sp[0]) != 0:
-            op = pwdtool.public_encrypt(sp[2], sp[0])
-        else:
+        if len(sp[0]) == 0:
             op = []
+            self.response.out.write("Empty\n")
+        elif len(sp[1]) == 0 or len(sp[2]) == 0:
+            op = pwdtool.public_encrypt(pwdtool.KEYSTR, sp[0])
+        else:
+            op = pwdtool.public_encrypt(sp[2], sp[0])
+        self.response.out.write("<pre>\n")
         for item in op:
             self.response.out.write("%s\t%s\t%s\t%s\t%s\t%s\n" % \
                 (item[0][0], item[0][1], item[0][2], item[1][0], item[1][1], item[1][2]))
+        self.response.out.write("</pre></body></html>\n")
+    def post(self, keyb):
+        self.response.out.write("Empty\n")
 
 application = webapp.WSGIApplication([
                                      ('/', MainPage),
