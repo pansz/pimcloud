@@ -36,7 +36,8 @@ def mydecode(key, hint, ptr):
     return myrot13(dest)
 
 def myencode(key):
-    return myrot13(key)
+    src = urllib.unquote(key)
+    return myrot13(src)
 
 class MainPage(webapp.RequestHandler):
     def get(self):
@@ -79,6 +80,28 @@ class Wubi(webapp.RequestHandler):
 
 class PwdTool(webapp.RequestHandler):
     def get(self, keyb):
+        self.response.headers['Content-Type'] = 'text/plain'
+        for k, h, v in mypwd.parse(myencode(keyb)):
+            self.response.out.write(mydecode(k,h,v))
+
+class PwdPost(webapp.RequestHandler):
+    def get(self):
+        self.response.headers['Content-Type'] = 'text/html'
+        self.response.out.write("""
+    <html
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Personal Password Tool</title>
+    </head>
+    <body>
+        <form action="/pwd" method="post">
+            <div><input name="arg1" /></div>
+            <div><input name="arg2" /></div>
+            <div><input type="submit" value="Check" /></div>
+        </form>
+    </body></html>
+        """)
+    def post(self):
         self.response.headers['Content-Type'] = 'text/html'
         self.response.out.write("""
     <html
@@ -88,22 +111,33 @@ class PwdTool(webapp.RequestHandler):
     </head>
     <body>
         """)
-        strkey = urllib.unquote(keyb)
-        sp = strkey.partition("@")
-        if len(sp[0]) == 0:
-            op = []
-            self.response.out.write("Empty\n")
-        elif len(sp[1]) == 0 or len(sp[2]) == 0:
-            op = mypwd.public_encrypt(mypwd.KEYSTR, sp[0])
-        else:
-            op = mypwd.public_encrypt(sp[2], sp[0])
+        strkey = self.request.get("arg1")
+        strpwd = self.request.get("arg2")
+        self.response.out.write("""
+        <form action="/pwd" method="post">
+            <div><input name="arg1" value="%s" /></div>
+            <div><input name="arg2" value="%s" /></div>
+            <div><input type="submit" value="Check" /></div>
+        </form>
+        """ % (strkey, strpwd))
         self.response.out.write("<pre>\n")
+        if len(strpwd) == 0:
+            if len(strkey) == 0:
+                op = mypwd.public_encrypt(mypwd.KEYSTR, "gae")
+            else:
+                sp = strkey.partition("@")
+                if len(sp[0]) == 0:
+                    op = []
+                elif len(sp[1]) == 0 or len(sp[2]) == 0:
+                    op = mypwd.public_encrypt(mypwd.KEYSTR, sp[0])
+                else:
+                    op = mypwd.public_encrypt(sp[2], sp[0])
+        else:
+            op = mypwd.public_encrypt(strpwd, strkey)
         for item in op:
             self.response.out.write("%s\t%s\t%s\t%s\t%s\t%s\n" % \
-                (item[0][0], item[0][1], item[0][2], item[1][0], item[1][1], item[1][2]))
+                (item[0], item[1], item[2], item[3], item[4], item[5]))
         self.response.out.write("</pre></body></html>\n")
-    def post(self, keyb):
-        self.response.out.write("Empty\n")
 
 application = webapp.WSGIApplication([
                                      ('/', MainPage),
@@ -112,6 +146,7 @@ application = webapp.WSGIApplication([
                                      ('/ms/(.*)', ShuangPinMs),
                                      ('/wb/(.*)', Wubi),
                                      ('/pwd/(.*)', PwdTool),
+                                     ('/pwd', PwdPost),
                                          ],
                                      debug=True)
 
