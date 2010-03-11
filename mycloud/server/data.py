@@ -220,14 +220,18 @@ def create_shuangpin_table(rules):
             else:
                 sptable[sp1] = key
     # the jxqy+v special case handling
+    # alias 1 is shuangpin vs. quanpin, alias 2 is shuangpin vs. shuangpin
     if g_mode == "abc" or g_mode == "purple":
         sptable["__alias1__"] = {"jv":"ju", "qv":"qu", "xv":"xu", "yv":"yu"}
         sptable["__alias2__"] = {"jv":"ju", "qv":"qu", "xv":"xu", "yv":"yu"}
-        #sptable.update({"jv":"ju", "qv":"qu", "xv":"xu", "yv":"yu"})
     elif g_mode == "ms":
         sptable["__alias1__"] = {"jv":"jue", "qv":"que", "xv":"xue", "yv":"yue"}
         sptable["__alias2__"] = {"jv":"jt", "qv":"qt", "xv":"xt", "yv":"yt"}
-        #sptable.update({"jv":"jue", "qv":"que", "xv":"xue", "yv":"yue"})
+    if g_mode == "nature":
+        sptable["__alias1__"] = {"jv":"ju", "qv":"qu", "xv":"xu", "yv":"yu", 
+                "aa":"a", "ee":"e"}
+        sptable["__alias2__"] = {"jv":"ju", "qv":"qu", "xv":"xu", "yv":"yu",
+                "aa":"oa", "ee":"oe"}
     else:
         sptable["__alias1__"] = {}
         sptable["__alias2__"] = {}
@@ -491,7 +495,7 @@ def getname():
     elif g_mode == "purple":
         return "紫光双拼"
     elif g_mode == "nature":
-        return "自然码双拼"
+        return "自然码"
     elif g_mode == "wubi":
         return "五笔"
     elif g_mode == "zhuyin":
@@ -509,13 +513,13 @@ def getkeychars():
     elif g_mode == "abc":
         return '[a-z0-9"]'
     elif g_mode == "ms":
-        return "[a-z0-9;]"
+        return "[a-z;]"
     elif g_mode == "plusplus":
-        return "[a-z0-9]"
+        return "[a-z]"
     elif g_mode == "purple":
-        return "[a-z0-9;]"
+        return "[a-z;]"
     elif g_mode == "nature":
-        return "[a-z0-9]"
+        return "[a-z']"
     elif g_mode == "wubi":
         return "[a-z`]"
     elif g_mode == "zhuyin":

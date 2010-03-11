@@ -648,6 +648,11 @@ def shuangpin_parse(keyb, debug):
         print " %d 个结果：缺省为 %s => %s，提示信息为 %s" % (len(ret)-1, keyb, ret[0][0], ret[0][1])
     return ret
 
+# TODO: 自然码解析
+def nature_parse(keyb, debug):
+    retu = []
+    return ret
+
 # TODO: 五笔解析
 def wubi_parse(keyb, debug):
     lenkb = len(keyb)
@@ -687,7 +692,7 @@ parsefunc = {
         "quanpin" : quanpin_parse,
         "abc" : shuangpin_parse,
         "ms" : shuangpin_parse,
-        "nature" : shuangpin_parse,
+        "nature" : nature_parse,
         "plusplus" : shuangpin_parse,
         "purple" : shuangpin_parse,
         "wubi" : wubi_parse,
