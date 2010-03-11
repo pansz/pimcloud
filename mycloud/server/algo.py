@@ -22,6 +22,7 @@
 
 import urllib
 import data
+import mypwd
 
 # 显示 unicode
 def getunicode(code):
@@ -342,15 +343,15 @@ def remote_parse(kbmap, debug):
 
 # 根据 list 获取拼音
 def getshuangpin(pyl, wc):
-    ret = ""
+    ret = []
     for i in range(wc):
-        ret += pyl[i][0]
-    return ret, pyl[wc][1]
+        ret.append(pyl[i][0])
+    return "".join(ret), pyl[wc][1]
 def getquanpin(pyl, wc):
-    ret = ""
+    ret = []
     for i in range(wc):
-        ret += pyl[i][0] + "'"
-    return ret.rstrip("'"), pyl[wc][1]
+        ret.append(pyl[i][0])
+    return "'".join(ret), pyl[wc][1]
 
 # 利用本地词库进行解析，全拼将来要支持简拼功能
 def local_parse_quanpin(kbmap, debug):
@@ -690,6 +691,7 @@ parsefunc = {
         "plusplus" : shuangpin_parse,
         "purple" : shuangpin_parse,
         "wubi" : wubi_parse,
+        "pwd" : mypwd.parse,
         }
 
 # 主要的解析函数，决定解析方式。

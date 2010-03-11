@@ -474,6 +474,8 @@ def setmode(mode):
     elif mode == "wubi":
         # wubi uses quanpin as pinyin table
         get_py_table = create_quanpin_table
+    elif mode == "pwd":
+        pass
     else:
         raise ValueError, "invalid mode"
 
@@ -496,6 +498,8 @@ def getname():
         return "注音"
     elif g_mode == "cangjie":
         return "仓颉"
+    elif mode == "pwd":
+        return "密码生成"
     else:
         raise ValueError, "invalid mode"
 
@@ -518,6 +522,8 @@ def getkeychars():
         return "[a-z]"
     elif g_mode == "cangjie":
         return "[a-z]"
+    elif g_mode == "pwd":
+        return "[A-Za-z0-9@._]"
     else:
         raise ValueError, "invalid mode"
 

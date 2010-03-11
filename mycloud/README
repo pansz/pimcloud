@@ -21,6 +21,8 @@ About server:
 
     注意，与 vimim 不同的是，本词库必须使用 unix 行结束符（在 vim 中 :set ff=unix）。
 
+    关于 GAE，GAE 的版本发布在 pim-cloud，仅供测试用途，如果您希望自行使用，请自己建一个 GAE 应用并上传。
+
 About client:
 
     libmycloud.dll 为 Windows 使用

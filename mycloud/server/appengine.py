@@ -18,12 +18,19 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
+import os
+from google.appengine.ext import db
 from google.appengine.ext import webapp
+from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 import algo
 import urllib
 import string
 import mypwd
+
+class im_record(db.Model):
+    keyb = db.StringProperty()
+    content = db.StringProperty(multiline=True)
 
 def myrot13(input):
     a = "12345abcdefghijklmABCDEFGHIJKLM"
@@ -39,88 +46,58 @@ def myencode(key):
     src = urllib.unquote(key)
     return myrot13(src)
 
+def std_parse(self, keyb, mode):
+    self.response.headers['Content-Type'] = 'text/plain'
+    algo.parse("__setmode="+mode)
+    algo.parse("__setgae=1")
+    for k, h, v in algo.parse(myencode(keyb)):
+        self.response.out.write(mydecode(k,h,v))
+
+def use_template(self, filename, template_arg):
+    self.response.headers['Content-Type'] = 'text/html'
+    path = os.path.join(os.path.dirname(__file__), filename)
+    self.response.out.write(template.render(path, template_arg))
+
 class MainPage(webapp.RequestHandler):
     def get(self):
-        self.response.headers['Content-Type'] = 'text/html'
-        file = open("index.html", "r")
-        self.response.out.write(file.read())
-        file.close()
+        use_template(self, "index.html", {})
 
 class QuanPin(webapp.RequestHandler):
     def get(self, keyb):
-        self.response.headers['Content-Type'] = 'text/plain'
-        algo.parse("__setmode=quanpin")
-        algo.parse("__setgae=1")
-        for k, h, v in algo.parse(myencode(keyb)):
-            self.response.out.write(mydecode(k,h,v))
+        std_parse(self, keyb, "quanpin")
 
 class ShuangPinAbc(webapp.RequestHandler):
     def get(self, keyb):
-        self.response.headers['Content-Type'] = 'text/plain'
-        algo.parse("__setmode=abc")
-        algo.parse("__setgae=1")
-        for k, h, v in algo.parse(myencode(keyb)):
-            self.response.out.write(mydecode(k,h,v))
+        std_parse(self, keyb, "abc")
 
 class ShuangPinMs(webapp.RequestHandler):
     def get(self, keyb):
-        self.response.headers['Content-Type'] = 'text/plain'
-        algo.parse("__setmode=ms")
-        algo.parse("__setgae=1")
-        for k, h, v in algo.parse(myencode(keyb)):
-            self.response.out.write(mydecode(k,h,v))
+        std_parse(self, keyb, "ms")
 
 class Wubi(webapp.RequestHandler):
     def get(self, keyb):
-        self.response.headers['Content-Type'] = 'text/plain'
-        algo.parse("__setmode=wubi")
-        algo.parse("__setgae=1")
-        for k, h, v in algo.parse(myencode(keyb)):
-            self.response.out.write(mydecode(k,h,v))
+        std_parse(self, keyb, "wubi")
 
 class PwdTool(webapp.RequestHandler):
     def get(self, keyb):
-        self.response.headers['Content-Type'] = 'text/plain'
-        for k, h, v in mypwd.parse(myencode(keyb)):
-            self.response.out.write(mydecode(k,h,v))
+        std_parse(self, keyb, "pwd")
+
+class AbcPost(webapp.RequestHandler):
+    def get(self):
+        use_template(self, "pim.html", { })
+    def post(self):
+        use_template(self, "pim.html", { })
 
 class PwdPost(webapp.RequestHandler):
     def get(self):
-        self.response.headers['Content-Type'] = 'text/html'
-        self.response.out.write("""
-    <html
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <title>Personal Password Tool</title>
-    </head>
-    <body>
-        <form action="/pwd" method="post">
-            <div><input name="arg1" /></div>
-            <div><input name="arg2" /></div>
-            <div><input type="submit" value="Check" /></div>
-        </form>
-    </body></html>
-        """)
+        use_template(self, "pwd.html", {
+            'arg1' : '',
+            'arg2' : '',
+            'result' : '',
+            })
     def post(self):
-        self.response.headers['Content-Type'] = 'text/html'
-        self.response.out.write("""
-    <html
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <title>Personal Password Tool</title>
-    </head>
-    <body>
-        """)
         strkey = self.request.get("arg1")
         strpwd = self.request.get("arg2")
-        self.response.out.write("""
-        <form action="/pwd" method="post">
-            <div><input name="arg1" value="%s" /></div>
-            <div><input name="arg2" value="%s" /></div>
-            <div><input type="submit" value="Check" /></div>
-        </form>
-        """ % (strkey, strpwd))
-        self.response.out.write("<pre>\n")
         if len(strpwd) == 0:
             if len(strkey) == 0:
                 op = mypwd.public_encrypt(mypwd.KEYSTR, "gae")
@@ -134,15 +111,24 @@ class PwdPost(webapp.RequestHandler):
                     op = mypwd.public_encrypt(sp[2], sp[0])
         else:
             op = mypwd.public_encrypt(strpwd, strkey)
+        result = ''
+        x = 0
         for item in op:
-            self.response.out.write("%s\t%s\t%s\t%s\t%s\t%s\n" % \
-                (item[0], item[1], item[2], item[3], item[4], item[5]))
-        self.response.out.write("</pre></body></html>\n")
+            result = ''.join((result, "%d %s\t%d %s\t%d %s\t%d %s\t%d %s\t%d %s\n" % \
+                (x, item[0], x+5, item[1], x+10, item[2], \
+                x+15, item[3], x+20, item[4], x+25, item[5])))
+            x += 1
+        use_template(self, "pwd.html", {
+            'arg1' : "",
+            'arg2' : "",
+            'result' : result,
+            })
 
 application = webapp.WSGIApplication([
                                      ('/', MainPage),
                                      ('/qp/(.*)', QuanPin),
                                      ('/abc/(.*)', ShuangPinAbc),
+                                     ('/abc', AbcPost),
                                      ('/ms/(.*)', ShuangPinMs),
                                      ('/wb/(.*)', Wubi),
                                      ('/pwd/(.*)', PwdTool),

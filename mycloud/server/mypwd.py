@@ -95,33 +95,8 @@ def public_encrypt(str, key):
         output.append(slice0 + slice1)
     return output
 
-def internal_command(cmd):
-    k,p,v = cmd.partition("=")
-    if k == "setmode":
-        return True
-    elif k == "setmaxoutput":
-        return True
-    elif k == "isvalid":
-        return True
-    elif k == "getname":
-        return "密码生成"
-    elif k == "getkeychars":
-        return "[0-9a-z@.]"
-    elif k == "setgae":
-        return True
-    else:
-        return False
-
-def parse(keyb):
+def parse(keyb, debug=False):
     lenkeyb = len(keyb)
-    if keyb[0:2] == "__":
-        try:
-            ret = internal_command(keyb[2:])
-        except Exception:
-            ret = "False"
-        if type(ret).__name__ != "str":
-            ret = str(ret)
-        return [(ret, "__", lenkeyb)]
     sp = keyb.partition("@")
     if len(sp[0]) == 0:
         op = public_encrypt(KEYSTR, "python")
