@@ -239,6 +239,9 @@ def shuangpin_transform(item, sptable):
 def process(item, map, rzk):
     wc = len(item)/3
     twc = map["word_count"]
+    # 如果搜索返回了大于期望字长的字，则忽略
+    if wc > twc:
+        return "", ""
     newoutput = map["itmmap"][0][0] + map["itmmap"][0][1]
     for i in xrange(len(item)/3):
         start = i*3
@@ -280,6 +283,13 @@ def process(item, map, rzk):
         hint = "_"
     return newoutput, hint
 
+def ime_callback(str, keyb, dummy):
+    ret = []
+    for item in str.split("\t+"):
+        k,h,v = item.partition("：")
+        ret.append((k,int(v)))
+    return ret
+
 # 解析云端数据，同时兼顾本地用户数据
 def remote_parse(kbmap, debug):
     ret = []
@@ -320,24 +330,25 @@ def remote_parse(kbmap, debug):
     if len(ret) > 0:
         return ret
 
+    # TODO: 目前的搜狗云竟然不支持断字符号，此问题一定要解决，不然对位不齐
+    keyb = kbmap["pinyinstr"].replace("'", "")
     # check cloud
-    url = "http://web.pinyin.sogou.com/web_ime/get_ajax/%s.key" % kbmap["pinyinstr"]
+    url = "http://web.pinyin.sogou.com/api/py?key=938cdfe9e1e39f8dd5da428b1a6a69cb&query="+keyb
     fh = urllib.urlopen(url)
     remotestr = fh.read()
     str = urllib.unquote(remotestr)
-    try:
-        exec(str)
-    except Exception, inst:
-        print "Exception at "+kbmap["pinyinstr"], "str='"+ str+ "'",type(inst).__name__, inst
-        return ret
-    for item in ime_query_res.split("+"):
-        myitem = item.rstrip()
-        index = myitem.find('：')
-        if index == -1:
-            continue
-        ret.append((myitem[:index], int(myitem[index+3:])))
+    if str.startswith("ime_callback"):
+        try:
+            exec("ret = "+str)
+        except Exception, inst:
+            print "Exception at "+keyb, "str='"+ str+ "'",type(inst).__name__, inst
+            ret = []
+    else:
+        print "Error at "+keyb, "str='"+ str+ "'"
+        ret = []
+
     if debug:
-        ret.append((ime_query_key, -1))
+        ret.append((keyb, -1))
     kbmap["remote_flag"] = True
     return ret
 
