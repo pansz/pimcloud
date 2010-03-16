@@ -331,12 +331,25 @@ def remote_parse(kbmap, debug):
         return ret
 
     # TODO: 目前的搜狗云竟然不支持断字符号，此问题一定要解决，不然对位不齐
-    keyb = kbmap["pinyinstr"].replace("'", "")
+    #keyb = kbmap["pinyinstr"].replace("'", "")
     # check cloud
-    url = "http://web.pinyin.sogou.com/api/py?key=938cdfe9e1e39f8dd5da428b1a6a69cb&query="+keyb
+    url = "http://web.pinyin.sogou.com/web_ime/get_ajax/%s.key" % kbmap["pinyinstr"]
+    #url = "http://web.pinyin.sogou.com/api/py?key=938cdfe9e1e39f8dd5da428b1a6a69cb&query="+keyb
     fh = urllib.urlopen(url)
     remotestr = fh.read()
     str = urllib.unquote(remotestr)
+    try:
+        exec(str)
+    except Exception, inst:
+        print "Exception at "+kbmap["pinyinstr"], "str='"+ str+ "'",type(inst).__name__, inst
+        return ret
+    for item in ime_query_res.split("+"):
+        myitem = item.rstrip()
+        index = myitem.find('：')
+        if index == -1:
+            continue
+        ret.append((myitem[:index], int(myitem[index+3:])))
+    """
     if str.startswith("ime_callback"):
         try:
             exec("ret = "+str)
@@ -346,7 +359,7 @@ def remote_parse(kbmap, debug):
     else:
         print "Error at "+keyb, "str='"+ str+ "'"
         ret = []
-
+"""
     if debug:
         ret.append((keyb, -1))
     kbmap["remote_flag"] = True
