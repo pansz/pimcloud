@@ -387,10 +387,11 @@ def local_parse_quanpin(kbmap, debug):
         return ret
     wc = kbmap["word_count"]
     zk = data.get(data.load_alpha_pyzk2)
-    if wc >= 3:
-        zk3 = data.get(data.load_alpha_pyzk3)
-    if wc >= 4:
-        zk4 = data.get(data.load_alpha_pyzk4)
+    if not g_gae:
+        if wc >= 3:
+            zk3 = data.get(data.load_alpha_pyzk3)
+        if wc >= 4:
+            zk4 = data.get(data.load_alpha_pyzk4)
     try:
         userzk = data.get(data.load_alpha_userzk)
         ori = kbmap["originput"]
@@ -414,16 +415,17 @@ def local_parse_quanpin(kbmap, debug):
         pass
 
     # 分别解析多字词、双字词和单字。
-    if wc >= 4:
-        key, index = getquanpin(pyl, 4)
-        if zk4.has_key(key):
-            for item in zk4[key].split(" "):
-                ret.append((item, index))
-    elif wc == 3:
-        key, index = getquanpin(pyl, 3)
-        if zk3.has_key(key):
-            for item in zk3[key].split(" "):
-                ret.append((item, index))
+    if not g_gae:
+        if wc >= 4:
+            key, index = getquanpin(pyl, 4)
+            if zk4.has_key(key):
+                for item in zk4[key].split(" "):
+                    ret.append((item, index))
+        elif wc == 3:
+            key, index = getquanpin(pyl, 3)
+            if zk3.has_key(key):
+                for item in zk3[key].split(" "):
+                    ret.append((item, index))
     if wc > 1:
         key, index = getquanpin(pyl, 2)
         if zk.has_key(key):
@@ -448,10 +450,11 @@ def local_parse_shuangpin(kbmap, debug):
         return ret
     wc = kbmap["word_count"]
     zk = data.get(data.load_alpha_pyzk2)
-    if wc == 3 or wc > 4:
-        zk3 = data.get(data.load_alpha_pyzk3)
-    if wc == 4 or wc > 5:
-        zk4 = data.get(data.load_alpha_pyzk4)
+    if not g_gae:
+        if wc == 3 or wc > 4:
+            zk3 = data.get(data.load_alpha_pyzk3)
+        if wc == 4 or wc > 5:
+            zk4 = data.get(data.load_alpha_pyzk4)
     try:
         userzk = data.get(data.load_alpha_userzk)
         ori = kbmap["originput"]
@@ -474,16 +477,17 @@ def local_parse_shuangpin(kbmap, debug):
         pass
 
     # 分别解析多字词、双字词和单字。
-    if wc == 4 or wc > 5:
-        key, index = getshuangpin(pyl, 4)
-        if zk4.has_key(key):
-            for item in zk4[key].split(" "):
-                ret.append((item, index))
-    if wc == 3 or wc > 4:
-        key, index = getshuangpin(pyl, 3)
-        if zk3.has_key(key):
-            for item in zk3[key].split(" "):
-                ret.append((item, index))
+    if not g_gae:
+        if wc == 4 or wc > 5:
+            key, index = getshuangpin(pyl, 4)
+            if zk4.has_key(key):
+                for item in zk4[key].split(" "):
+                    ret.append((item, index))
+        if wc == 3 or wc > 4:
+            key, index = getshuangpin(pyl, 3)
+            if zk3.has_key(key):
+                for item in zk3[key].split(" "):
+                    ret.append((item, index))
     if wc >= 2:
         key, index = getshuangpin(pyl, 2)
         if zk.has_key(key):
