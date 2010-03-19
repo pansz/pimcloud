@@ -333,10 +333,24 @@ def remote_parse(kbmap, debug):
     # TODO: 目前的搜狗云竟然不支持断字符号，此问题一定要解决，不然对位不齐
     keyb = kbmap["pinyinstr"].replace("'", "")
     # check cloud
+    #url = "http://web.pinyin.sogou.com/web_ime/get_ajax/%s.key" % kbmap["pinyinstr"]
     url = "http://web.pinyin.sogou.com/api/py?key=938cdfe9e1e39f8dd5da428b1a6a69cb&query="+keyb
     fh = urllib.urlopen(url)
     remotestr = fh.read()
     str = urllib.unquote(remotestr)
+    """
+    try:
+        exec(str)
+    except Exception, inst:
+        print "Exception at "+kbmap["pinyinstr"], "str='"+ str+ "'",type(inst).__name__, inst
+        return ret
+    for item in ime_query_res.split("+"):
+        myitem = item.rstrip()
+        index = myitem.find('：')
+        if index == -1:
+            continue
+        ret.append((myitem[:index], int(myitem[index+3:])))
+        """
     if str.startswith("ime_callback"):
         try:
             exec("ret = "+str)
@@ -346,7 +360,6 @@ def remote_parse(kbmap, debug):
     else:
         print "Error at "+keyb, "str='"+ str+ "'"
         ret = []
-
     if debug:
         ret.append((keyb, -1))
     kbmap["remote_flag"] = True
@@ -374,10 +387,11 @@ def local_parse_quanpin(kbmap, debug):
         return ret
     wc = kbmap["word_count"]
     zk = data.get(data.load_alpha_pyzk2)
-    if wc >= 3:
-        zk3 = data.get(data.load_alpha_pyzk3)
-    if wc >= 4:
-        zk4 = data.get(data.load_alpha_pyzk4)
+    if not g_gae:
+        if wc >= 3:
+            zk3 = data.get(data.load_alpha_pyzk3)
+        if wc >= 4:
+            zk4 = data.get(data.load_alpha_pyzk4)
     try:
         userzk = data.get(data.load_alpha_userzk)
         ori = kbmap["originput"]
@@ -401,16 +415,17 @@ def local_parse_quanpin(kbmap, debug):
         pass
 
     # 分别解析多字词、双字词和单字。
-    if wc >= 4:
-        key, index = getquanpin(pyl, 4)
-        if zk4.has_key(key):
-            for item in zk4[key].split(" "):
-                ret.append((item, index))
-    elif wc == 3:
-        key, index = getquanpin(pyl, 3)
-        if zk3.has_key(key):
-            for item in zk3[key].split(" "):
-                ret.append((item, index))
+    if not g_gae:
+        if wc >= 4:
+            key, index = getquanpin(pyl, 4)
+            if zk4.has_key(key):
+                for item in zk4[key].split(" "):
+                    ret.append((item, index))
+        elif wc == 3:
+            key, index = getquanpin(pyl, 3)
+            if zk3.has_key(key):
+                for item in zk3[key].split(" "):
+                    ret.append((item, index))
     if wc > 1:
         key, index = getquanpin(pyl, 2)
         if zk.has_key(key):
@@ -435,10 +450,11 @@ def local_parse_shuangpin(kbmap, debug):
         return ret
     wc = kbmap["word_count"]
     zk = data.get(data.load_alpha_pyzk2)
-    if wc == 3 or wc > 4:
-        zk3 = data.get(data.load_alpha_pyzk3)
-    if wc == 4 or wc > 5:
-        zk4 = data.get(data.load_alpha_pyzk4)
+    if not g_gae:
+        if wc == 3 or wc > 4:
+            zk3 = data.get(data.load_alpha_pyzk3)
+        if wc == 4 or wc > 5:
+            zk4 = data.get(data.load_alpha_pyzk4)
     try:
         userzk = data.get(data.load_alpha_userzk)
         ori = kbmap["originput"]
@@ -461,16 +477,17 @@ def local_parse_shuangpin(kbmap, debug):
         pass
 
     # 分别解析多字词、双字词和单字。
-    if wc == 4 or wc > 5:
-        key, index = getshuangpin(pyl, 4)
-        if zk4.has_key(key):
-            for item in zk4[key].split(" "):
-                ret.append((item, index))
-    if wc == 3 or wc > 4:
-        key, index = getshuangpin(pyl, 3)
-        if zk3.has_key(key):
-            for item in zk3[key].split(" "):
-                ret.append((item, index))
+    if not g_gae:
+        if wc == 4 or wc > 5:
+            key, index = getshuangpin(pyl, 4)
+            if zk4.has_key(key):
+                for item in zk4[key].split(" "):
+                    ret.append((item, index))
+        if wc == 3 or wc > 4:
+            key, index = getshuangpin(pyl, 3)
+            if zk3.has_key(key):
+                for item in zk3[key].split(" "):
+                    ret.append((item, index))
     if wc >= 2:
         key, index = getshuangpin(pyl, 2)
         if zk.has_key(key):
