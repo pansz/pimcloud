@@ -98,6 +98,7 @@ def quanpin_transform(item, qptable):
     last_word_ptr = 0
     index = 0
     lenitem = len(item)
+    bchar = ""          # work around for new sogou py
     while index < lenitem:
         if not item[index].islower():
             index += 1
@@ -140,7 +141,7 @@ def quanpin_transform(item, qptable):
                         matchstr = matchstr[:-1]
                 ptrmap[len(pinyinstr)] = index
                 pinyinlist.append((matchstr, len(pinyinstr)))
-                pinyinstr += qptable[matchstr] + "'"
+                pinyinstr += qptable[matchstr] + bchar 
 
                 itmmap[word_count] = filter_glyph(item[last_word_ptr:index], qptable)
                 index += i
@@ -153,12 +154,12 @@ def quanpin_transform(item, qptable):
             print "error: no match for", item
             ptrmap[len(pinyinstr)] = index
             pinyinlist.append((item[index], len(pinyinstr)))
-            pinyinstr += item[index] + "'"
+            pinyinstr += item[index] + bchar
             index += 1
             word_count += 1
     itmmap[word_count] = filter_glyph(item[last_word_ptr:], qptable)
     ptrmap["word_count"] = word_count  # 经分析出的总字数
-    pinyinstr = pinyinstr.rstrip("'")
+    pinyinstr = pinyinstr.rstrip(bchar)
     ptrmap[len(pinyinstr)] = index
     pinyinlist.append(("", len(pinyinstr)))
     ptrmap["pinyinstr"] = pinyinstr    # 此处返回完全断字之后的字符串，符合搜狗云标准
@@ -180,6 +181,7 @@ def shuangpin_transform(item, sptable):
     word_count = 0
     alias1 = sptable["__alias1__"]
     alias2 = sptable["__alias2__"]
+    bchar = ""          # work around for new sogou py
     while index < lenitem:
         if item[index].islower():
             if item[index] in sptable["__uimode__"]:
@@ -204,16 +206,16 @@ def shuangpin_transform(item, sptable):
                 # the last odd shuangpin code are output as only shengmu
                 ptrmap[len(pinyinstr)] = index
                 pinyinlist.append((sp1, len(pinyinstr)))
-                pinyinstr += sptable[sp1]+"'"
+                pinyinstr += sptable[sp1]+bchar
             elif alias1.has_key(sp1):
                 ptrmap[len(pinyinstr)] = index
                 pinyinlist.append((alias2[sp1], len(pinyinstr)))
-                pinyinstr += alias1[sp1]+"'"
+                pinyinstr += alias1[sp1]+bchar
             else:
                 # invalid shuangpin code
                 ptrmap[len(pinyinstr)] = index
                 pinyinlist.append((sp1, len(pinyinstr)))
-                pinyinstr += sp1 + "'"
+                pinyinstr += sp1 + bchar
             index += len(sp1)
             if index > lenitem:
                 index = lenitem
@@ -224,7 +226,7 @@ def shuangpin_transform(item, sptable):
             index += 1
     itmmap[word_count] = filter_glyph(item[last_word_ptr:], sptable)
     ptrmap["word_count"] = word_count
-    pinyinstr = pinyinstr.rstrip("'")
+    pinyinstr = pinyinstr.rstrip(bchar)
     ptrmap[len(pinyinstr)] = index
     pinyinlist.append(("", len(pinyinstr)))
     ptrmap["pinyinstr"] = pinyinstr
@@ -330,8 +332,8 @@ def remote_parse(kbmap, debug):
     if len(ret) > 0:
         return ret
 
-    # TODO: 目前的搜狗云竟然不支持断字符号，此问题一定要解决，不然对位不齐
-    keyb = kbmap["pinyinstr"].replace("'", "")
+    # TODO: 目前的搜狗云不支持断字符号，暂时用空格代替
+    keyb = kbmap["pinyinstr"].replace("'", " ")
     # check cloud
     #url = "http://web.pinyin.sogou.com/web_ime/get_ajax/%s.key" % kbmap["pinyinstr"]
     url = "http://web.pinyin.sogou.com/api/py?key=938cdfe9e1e39f8dd5da428b1a6a69cb&query="+keyb
