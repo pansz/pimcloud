@@ -10,8 +10,8 @@ if __name__ == "__main__":
     else:
         algo.parse("__setmode=quanpin")
         keyb = sys.argv[1]
-        ret = algo.parse(keyb, debug=True)
-        #ret = algo.parse(keyb)
+        #ret = algo.parse(keyb, debug=True)
+        ret = algo.parse(keyb)
         if len(ret) > 0:
             maxlen = len(ret[0][0])
             count = 0
