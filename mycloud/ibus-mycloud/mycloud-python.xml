@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- filename: mycloud.xml -->
+<component>
+	<name>org.freedesktop.IBus.MyCloudPython</name>
+	<description>Personal IM Cloud Python Component</description>
+	<exec>/usr/bin/ibus-engine-mycloud --ibus</exec>
+	<version>1.2.99.20100920</version>
+	<author>Pan, Shi Zhu (pan dot shizhu at gmail dot com)</author>
+	<license>GPL</license>
+	<homepage>http://code.google.com/p/pimcloud</homepage>
+	<textdomain>ibus-mycloud</textdomain>
+
+	<engines>
+		<engine>
+			<name>mycloud-python</name>
+			<language>zh</language>
+			<license>GPL</license>
+			<author>Pan, Shi Zhu (pan dot shizhu at gmail dot com)</author>
+			<icon>/usr/share/ibus-mycloud/icons/ibus-mycloud.svg</icon>
+			<layout>us</layout>
+			<longname>MyCloud</longname>
+			<description>Personal IM Cloud Input Method</description>
+			<rank>0</rank>
+		</engine>
+	</engines>
+
+</component>
