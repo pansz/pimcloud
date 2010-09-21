@@ -21,6 +21,7 @@
 import gobject
 import pango
 import enchant
+import mycloud
 import ibus
 from ibus import keysyms
 from ibus import modifier
@@ -43,64 +44,109 @@ class Engine(ibus.EngineBase):
             return False
         # print "%s, kv=0x%x, kc=0x%x, st=0x%x" % (self, keyval, keycode, state)
 
+        has_candidate = (self.__lookup_table.get_number_of_candidates() > 0)
+
         if self.__preedit_string:
             if keyval == keysyms.Return:
                 self.__commit_string(self.__preedit_string)
-                return True
             elif keyval == keysyms.Escape:
+                if has_candidate:
+                    self.__lookup_table.clean()
+                    self.__update_lookup_table()
                 self.__preedit_string = u""
                 self.__update()
-                return True
             elif keyval == keysyms.BackSpace:
+                if has_candidate:
+                    self.__lookup_table.clean()
+                    self.__update_lookup_table()
                 self.__preedit_string = self.__preedit_string[:-1]
                 self.__invalidate()
-                return True
             elif keyval == keysyms.space:
-                if self.__lookup_table.get_number_of_candidates() > 0:
+                if has_candidate:
                     self.__commit_string(self.__lookup_table.get_current_candidate().text)
                 else:
-                    self.__commit_string(self.__preedit_string)
-                return False
+                    preedit_len = len(self.__preedit_string)
+                    attrs = ibus.AttrList()
+                    self.__lookup_table.clean()
+                    if preedit_len > 0:
+                        res = mycloud.parsefunc(self.__preedit_string.encode("utf-8"), "172.16.55.240")
+                        if res != "":
+                            attrs.append(ibus.AttributeForeground(0xff0000, 0, preedit_len))
+                            for item in res.split("\n"):
+                                text = item.split("\t")[0]
+                                if text:
+                                    self.__lookup_table.append_candidate(ibus.Text(text))
+                    self.__update_lookup_table()
+                    self.__is_invalidate = False
             elif keyval >= keysyms._1 and keyval <= keysyms._9:
-                index = keyval - keysyms._1
-                candidates = self.__lookup_table.get_candidates_in_current_page()
-                if index >= len(candidates):
-                    return False
-                candidate = candidates[index].text
-                self.__commit_string(candidate)
-                return True
-            elif keyval == keysyms.Page_Up or keyval == keysyms.KP_Page_Up:
+                if has_candidate:
+                    index = keyval - keysyms._1
+                    candidates = self.__lookup_table.get_candidates_in_current_page()
+                    if index < len(candidates):
+                        candidate = candidates[index].text
+                        self.__commit_string(candidate)
+                else:
+                    if state & (modifier.CONTROL_MASK | modifier.ALT_MASK) == 0:
+                        self.__preedit_string += unichr(keyval)
+                        self.__invalidate()
+            elif keyval == keysyms.minus:
                 self.page_up()
-                return True
-            elif keyval == keysyms.Page_Down or keyval == keysyms.KP_Page_Down:
+            elif keyval == keysyms.equal:
                 self.page_down()
-                return True
             elif keyval == keysyms.Up:
                 self.cursor_up()
-                return True
             elif keyval == keysyms.Down:
                 self.cursor_down()
-                return True
             elif keyval == keysyms.Left or keyval == keysyms.Right:
-                return True
-        if keyval in xrange(keysyms.a, keysyms.z + 1) or \
-            keyval in xrange(keysyms.A, keysyms.Z + 1):
-            if state & (modifier.CONTROL_MASK | modifier.ALT_MASK) == 0:
-                self.__preedit_string += unichr(keyval)
-                self.__invalidate()
-                return True
-        else:
-            if keyval < 128 and self.__preedit_string:
-                self.__commit_string(self.__preedit_string)
+                pass
+            elif keyval in xrange(keysyms.a, keysyms.z + 1) or \
+                keyval in xrange(keysyms.A, keysyms.Z + 1):
+                if has_candidate:
+                    self.__commit_string(self.__lookup_table.get_current_candidate().text)
+                else:
+                    pass
+                if state & (modifier.CONTROL_MASK | modifier.ALT_MASK) == 0:
+                    self.__preedit_string += unichr(keyval)
+                    self.__invalidate()
+            else:
+                #print "blocked: keyval=0x%x, keycode=0x%x, state=0x%x" % (keyval, keycode, state)
+                pass
 
-        return False
+            # block all input when preedit available
+            return True
+        else:
+            if keyval in xrange(keysyms.a, keysyms.z + 1) or \
+                keyval in xrange(keysyms.A, keysyms.Z + 1):
+                if state & (modifier.CONTROL_MASK | modifier.ALT_MASK) == 0:
+                    self.__preedit_string += unichr(keyval)
+                    self.__invalidate()
+                    return True
+            elif keyval >= keysyms._1 and keyval <= keysyms._9:
+                pass
+            elif keyval in xrange(keysyms.exclam, keysyms.asciitilde+1):
+                # this includes a-z, A-Z, 0-9 and all symbols
+                # since we bypassed a-zA-Z0-9, we got all symbols
+                res = mycloud.parsefunc(chr(keyval), "172.16.55.240")
+                if res != "":
+                    item = res.split("\n")
+                    if item:
+                        text = item[0].split("\t")
+                        if text:
+                            self.__commit_string(text[0])
+                            return True
+                else:
+                    pass
+            else:
+                #print "ignored: keyval=0x%x, keycode=0x%x, state=0x%x" % (keyval, keycode, state)
+                pass
+
+            return False
 
     def __invalidate(self):
         if self.__is_invalidate:
             return
         self.__is_invalidate = True
         gobject.idle_add(self.__update, priority = gobject.PRIORITY_LOW)
-
 
     def page_up(self):
         if self.__lookup_table.page_up():
@@ -129,21 +175,17 @@ class Engine(ibus.EngineBase):
     def __commit_string(self, text):
         self.commit_text(ibus.Text(text))
         self.__preedit_string = u""
+        if self.__lookup_table.get_number_of_candidates() > 0:
+            self.__lookup_table.clean()
+            self.__update_lookup_table()
         self.__update()
 
     def __update(self):
         preedit_len = len(self.__preedit_string)
         attrs = ibus.AttrList()
-        self.__lookup_table.clean()
-        if preedit_len > 0:
-            if not self.__dict.check(self.__preedit_string):
-                attrs.append(ibus.AttributeForeground(0xff0000, 0, preedit_len))
-                for text in self.__dict.suggest(self.__preedit_string):
-                    self.__lookup_table.append_candidate(ibus.Text(text))
         self.update_auxiliary_text(ibus.Text(self.__preedit_string, attrs), preedit_len > 0)
         attrs.append(ibus.AttributeUnderline(pango.UNDERLINE_SINGLE, 0, preedit_len))
         self.update_preedit_text(ibus.Text(self.__preedit_string, attrs), preedit_len, preedit_len > 0)
-        self.__update_lookup_table()
         self.__is_invalidate = False
 
     def __update_lookup_table(self):
