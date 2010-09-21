@@ -1,8 +1,8 @@
 # vim:set et sts=4 sw=4:
 #
-# ibus-tmpl - The Input Bus template project
+# ibus-mycloud - Personal Input Method Cloud Front-end for iBus
 #
-# Copyright (c) 2007-2008 Huang Peng <shawn.p.huang@gmail.com>
+# Copyright (c) 2010-2012 Pan, Shi Zhu (pan dot shizhu at gmail dot com)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,24 +20,30 @@
 
 import gobject
 import pango
-import enchant
 import mycloud
 import ibus
 from ibus import keysyms
 from ibus import modifier
 
 class Engine(ibus.EngineBase):
-    __dict = enchant.Dict("en")
 
     def __init__(self, bus, object_path):
         super(Engine, self).__init__(bus, object_path)
         self.__is_invalidate = False
         self.__preedit_string = u""
         self.__lookup_table = ibus.LookupTable()
+        self.__lookup_table.set_page_size(10)
         self.__prop_list = ibus.PropList()
         self.__prop_list.append(ibus.Property(u"test", icon = u"/usr/share/ibus-mycloud/icons/prop.svg"))
 
     def process_key_event(self, keyval, keycode, state):
+        try:
+            ret = self.process_key_event_debug(keyval, keycode, state)
+        except Exception, inst:
+            print type(inst).__name__, inst
+            return False
+        return ret
+    def process_key_event_debug(self, keyval, keycode, state):
         # ignore key release events
         is_press = ((state & modifier.RELEASE_MASK) == 0)
         if not is_press:
@@ -78,9 +84,11 @@ class Engine(ibus.EngineBase):
                                     self.__lookup_table.append_candidate(ibus.Text(text))
                     self.__update_lookup_table()
                     self.__is_invalidate = False
-            elif keyval >= keysyms._1 and keyval <= keysyms._9:
+            elif keyval >= keysyms._0 and keyval <= keysyms._9:
                 if has_candidate:
                     index = keyval - keysyms._1
+                    if index < 0:
+                        index = 10
                     candidates = self.__lookup_table.get_candidates_in_current_page()
                     if index < len(candidates):
                         candidate = candidates[index].text
@@ -108,6 +116,18 @@ class Engine(ibus.EngineBase):
                 if state & (modifier.CONTROL_MASK | modifier.ALT_MASK) == 0:
                     self.__preedit_string += unichr(keyval)
                     self.__invalidate()
+            elif keyval in xrange(keysyms.exclam, keysyms.asciitilde+1):
+                if has_candidate:
+                    self.__commit_string(self.__lookup_table.get_current_candidate().text)
+                    res = self.__query_char(keyval)
+                    if res != "":
+                        self.__commit_string(res)
+                    else:
+                        return False
+                else:
+                    if state & (modifier.CONTROL_MASK | modifier.ALT_MASK) == 0:
+                        self.__preedit_string += unichr(keyval)
+                        self.__invalidate()
             else:
                 #print "blocked: keyval=0x%x, keycode=0x%x, state=0x%x" % (keyval, keycode, state)
                 pass
@@ -115,25 +135,22 @@ class Engine(ibus.EngineBase):
             # block all input when preedit available
             return True
         else:
-            if keyval in xrange(keysyms.a, keysyms.z + 1) or \
-                keyval in xrange(keysyms.A, keysyms.Z + 1):
+            if keyval in xrange(keysyms.a, keysyms.z + 1):
                 if state & (modifier.CONTROL_MASK | modifier.ALT_MASK) == 0:
                     self.__preedit_string += unichr(keyval)
                     self.__invalidate()
                     return True
-            elif keyval >= keysyms._1 and keyval <= keysyms._9:
+            elif keyval in xrange(keysyms.A, keysyms.Z + 1):
+                pass
+            elif keyval >= keysyms._0 and keyval <= keysyms._9:
                 pass
             elif keyval in xrange(keysyms.exclam, keysyms.asciitilde+1):
                 # this includes a-z, A-Z, 0-9 and all symbols
                 # since we bypassed a-zA-Z0-9, we got all symbols
-                res = mycloud.parsefunc(chr(keyval), "172.16.55.240")
+                res = self.__query_char(keyval)
                 if res != "":
-                    item = res.split("\n")
-                    if item:
-                        text = item[0].split("\t")
-                        if text:
-                            self.__commit_string(text[0])
-                            return True
+                    self.__commit_string(res)
+                    return True
                 else:
                     pass
             else:
@@ -142,6 +159,15 @@ class Engine(ibus.EngineBase):
 
             return False
 
+    def __query_char(self, keyval):
+        res = mycloud.parsefunc(chr(keyval), "172.16.55.240")
+        if res != "":
+            item = res.split("\n")
+            if item:
+                text = item[0].split("\t")
+                if text:
+                    return text[0]
+        return ""
     def __invalidate(self):
         if self.__is_invalidate:
             return
