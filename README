@@ -51,6 +51,7 @@ About client-src:
     make install
 
 About ibus-mycloud:
+
     ibus-mycloud 是给 ibus 作为客户端的。
     他没有依赖，只要有 ibus ，直接 make install 即可。
     make 命令的缺省目标用于调试，一般不用。
