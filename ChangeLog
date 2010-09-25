@@ -1,4 +1,7 @@
 
+2010-9-25 Pan, Shi Zhu  <pan.shizhu@gmail.com>
+	* ibus-mycloud: 上传初步的雏形
+
 2010-2-3 Pan, Shi Zhu  <pan.shizhu@gmail.com>
 	* server: 增加五笔解析相关代码
 	* server: 调整全拼对于几个歧义拼音词组的解析
