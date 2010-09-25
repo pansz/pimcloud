@@ -67,6 +67,7 @@ class Engine(ibus.EngineBase):
                 self.__update()
         elif source == self.state_select:
             if target == self.state_empty:
+                self.__preedit_string = u""
                 self.__lookup_table.clean()
                 self.__update_lookup_table()
                 self.__update()
@@ -258,9 +259,10 @@ class Engine(ibus.EngineBase):
     def __update(self):
         preedit_len = len(self.__preedit_string)
         attrs = ibus.AttrList()
-        self.update_auxiliary_text(ibus.Text(self.__preedit_string, attrs), preedit_len > 0)
+        ibt = ibus.Text(self.__preedit_string, attrs)
+        self.update_auxiliary_text(ibt, preedit_len > 0)
         attrs.append(ibus.AttributeUnderline(pango.UNDERLINE_SINGLE, 0, preedit_len))
-        self.update_preedit_text(ibus.Text(self.__preedit_string, attrs), preedit_len, preedit_len > 0)
+        self.update_preedit_text(ibt, preedit_len, preedit_len > 0)
         self.__is_invalidate = False
 
     def __update_lookup_table(self):
@@ -271,7 +273,7 @@ class Engine(ibus.EngineBase):
         self.register_properties(self.__prop_list)
 
     def focus_out(self):
-        pass
+        self.state_transit(self.state_empty)
 
     def reset(self):
         pass
