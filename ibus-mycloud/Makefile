@@ -13,5 +13,10 @@ install:
 	cp *.xml /usr/share/ibus/component
 	install ibus-engine-mycloud /usr/bin
 
+uninstall:
+	rm -rf /usr/share/ibus-mycloud
+	rm -f /usr/share/ibus/component/mycloud-python.xml
+	rm -f /usr/bin/ibus-engine-mycloud
+
 clean:
 	@echo Done.
