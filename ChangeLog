@@ -1,6 +1,7 @@
+(This file is considered obsolete)
 
-2010-9-25 Pan, Shi Zhu  <pan.shizhu@gmail.com>
-	* ibus-mycloud: 上传初步的雏形
+2010-2-25 Pan, Shi Zhu  <pan.shizhu@gmail.com>
+	* everything: hg 水银仓库创建，此后的提交日志均从 hg 。
 
 2010-2-3 Pan, Shi Zhu  <pan.shizhu@gmail.com>
 	* server: 增加五笔解析相关代码
