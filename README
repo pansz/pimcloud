@@ -24,6 +24,7 @@ About server:
     关于 GAE，GAE 的版本发布在 pim-cloud，仅供测试用途，如果您希望自行使用，请自己建一个 GAE 应用并上传。
 
 About client:
+    client 是给 vimim 准备的客户端。
 
     libmycloud.dll 为 Windows 使用
 
@@ -48,4 +49,9 @@ About client-src:
     ln -sf Makefile.linux Makefile
     make
     make install
+
+About ibus-mycloud:
+    ibus-mycloud 是给 ibus 作为客户端的。
+    他没有依赖，只要有 ibus ，直接 make install 即可。
+    make 命令的缺省目标用于调试，一般不用。
 
