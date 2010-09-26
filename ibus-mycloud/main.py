@@ -1,8 +1,8 @@
 # vim:set et sts=4 sw=4:
 #
-# ibus-tmpl - The Input Bus template project
+# ibus-mycloud - Personal IM Cloud
 #
-# Copyright (c) 2007-2008 Huang Peng <shawn.p.huang@gmail.com>
+# Copyright (c) 2010-2012 Pan, Shi Zhu <pan.shizhu@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,15 +32,15 @@ class IMApp:
                                           "MyCloud Python Component",
                                           "0.1.0",
                                           "GPL",
-                                          "Peng Huang <shawn.p.huang@gmail.com>")
+                                          "Pan, Shi Zhu <pan.shizhu@gmail.com>")
         self.__component.add_engine("mycloud-python",
                                     "mycloud python",
-                                    "English MyCloud",
-                                    "en",
+                                    "Personal IM Cloud",
+                                    "zh",
                                     "GPL",
-                                    "Peng Huang <shawn.p.huang@gmail.com>",
+                                    "Pan, Shi Zhu <pan.shizhu@gmail.com>",
                                     "",
-                                    "en")
+                                    "zh")
         self.__mainloop = gobject.MainLoop()
         self.__bus = ibus.Bus()
         self.__bus.connect("disconnected", self.__bus_disconnected_cb)
