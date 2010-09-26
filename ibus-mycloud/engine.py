@@ -99,6 +99,23 @@ class Engine(ibus.EngineBase):
             #print "ignored: keyval=0x%x, keycode=0x%x, state=0x%x" % (keyval, keycode, state)
             pass
         return False
+    def cloud_query_default(self, pestr):
+        res = mycloud.parsefunc(pestr.encode("utf-8"), "172.16.55.240")
+        preedit_len = len(pestr)
+        if res != "":
+            item = res.split("\n")[0]
+            try:
+                text, index, hint = item.split("\t")
+                ibt = ibus.Text(text)
+                ibt.index = index
+                ibt.commit_text = text
+                return ibt
+            except ValueError:
+                pass
+        ibt = ibus.Text(pestr)
+        ibt.index = preedit_len
+        ibt.commit_text = pestr
+        return ibt
     def cloud_query(self, pestr):
         res = mycloud.parsefunc(pestr.encode("utf-8"), "172.16.55.240")
         if res != "":
@@ -125,7 +142,10 @@ class Engine(ibus.EngineBase):
             self.state_transit(self.state_empty)
         elif keyval == keysyms.BackSpace:
             self.__preedit_string = self.__preedit_string[:-1]
-            self.__invalidate()
+            if self.__preedit_string == u"":
+                self.state_transit(self.state_empty)
+            else:
+                self.__invalidate()
         elif keyval == keysyms.space:
             self.cloud_query(self.__preedit_string)
             if self.__lookup_table.get_number_of_candidates() > 0:
@@ -158,7 +178,10 @@ class Engine(ibus.EngineBase):
             self.state_transit(self.state_empty)
         elif keyval == keysyms.BackSpace:
             self.__preedit_string = self.__preedit_string[:-1]
-            self.state_transit(self.state_input)
+            if self.__preedit_string == u"":
+                self.state_transit(self.state_empty)
+            else:
+                self.state_transit(self.state_input)
         elif keyval == keysyms.space:
             self.__commit_string(self.__lookup_table.get_current_candidate())
             if self.state_is(self.state_select):
@@ -186,13 +209,14 @@ class Engine(ibus.EngineBase):
             if self.state_is(self.state_empty):
                 return self.__state(keyval, keycode, state)
             else:
-                self.sentence_update()
+                self.state_transit(self.state_input)
+                return self.__state(keyval, keycode, state)
         elif keyval in xrange(keysyms.exclam, keysyms.asciitilde+1):
             self.__commit_string(self.__lookup_table.get_current_candidate())
-            if self.state_is(self.state_empty):
-                return self.__state(keyval, keycode, state)
-            else:
-                self.sentence_update()
+            while not self.state_is(self.state_empty):
+                ibt = self.cloud_query_default(self.__preedit_string)
+                self.__commit_string(ibt)
+            return self.__state(keyval, keycode, state)
         else:
             #print "blocked: keyval=0x%x, keycode=0x%x, state=0x%x" % (keyval, keycode, state)
             pass
@@ -257,23 +281,23 @@ class Engine(ibus.EngineBase):
             ibt = ibus.Text("")
             self.update_auxiliary_text(ibt, False)
             self.update_preedit_text(ibt, 0, False)
-            self.__is_invalidate = False
         elif self.state_is(self.state_input):
-            preedit_len = len(self.__preedit_string)
-            attrs = ibus.AttrList()
-            ibt = ibus.Text(self.__preedit_string, attrs)
+            attr = ibus.AttrList()
+            ibt = ibus.Text(self.__preedit_string, attr)
             self.update_auxiliary_text(ibt, True)
-            attrs.append(ibus.AttributeUnderline(pango.UNDERLINE_LOW, 0, preedit_len))
+            preedit_len = len(self.__preedit_string)
+            attr.append(ibus.AttributeUnderline(pango.UNDERLINE_SINGLE, 0, preedit_len))
             self.update_preedit_text(ibt, preedit_len, True)
-            self.__is_invalidate = False
         elif self.state_is(self.state_select):
             self.update_auxiliary_text(ibus.Text(self.__preedit_string), True)
             ibt = self.__lookup_table.get_current_candidate()
+            attr = ibus.AttrList()
             preedit_len = len(unicode(ibt.commit_text, "utf-8"))
-            self.update_preedit_text(ibus.Text(ibt.commit_text), preedit_len, True)
-            self.__is_invalidate = False
+            attr.append(ibus.AttributeUnderline(pango.UNDERLINE_SINGLE, 0, preedit_len))
+            self.update_preedit_text(ibus.Text(ibt.commit_text, attr), preedit_len, True)
         else:
             pass
+        self.__is_invalidate = False
 
     def __update_lookup_table(self):
         visible = self.__lookup_table.get_number_of_candidates() > 0
@@ -291,3 +315,10 @@ class Engine(ibus.EngineBase):
     def property_activate(self, prop_name):
         print "PropertyActivate(%s)" % prop_name
 
+    def candidate_clicked(self, index, button, state):
+        if state == 0 and button == 1:
+            candidates = self.__lookup_table.get_candidates_in_current_page()
+            if index < len(candidates):
+                self.__commit_string(candidates[index])
+                if self.state_is(self.state_select):
+                    self.sentence_update()
