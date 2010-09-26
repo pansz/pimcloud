@@ -269,7 +269,7 @@ class Engine(ibus.EngineBase):
         elif self.state_is(self.state_select):
             self.update_auxiliary_text(ibus.Text(self.__preedit_string), True)
             ibt = self.__lookup_table.get_current_candidate()
-            preedit_len = len(ibt.commit_text)
+            preedit_len = len(unicode(ibt.commit_text, "utf-8"))
             self.update_preedit_text(ibus.Text(ibt.commit_text), preedit_len, True)
             self.__is_invalidate = False
         else:
