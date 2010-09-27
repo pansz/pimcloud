@@ -67,7 +67,7 @@ def filter_glyph(input, pt):
             elif c == mode_u and uimode == mode_o:
                 uimode = c
                 intmed += c
-            elif punctmap.has_key(c):
+            elif c in punctmap:
                 if c == '"':
                     if g_double_quote_mode:
                         intmed += punctmap[c][0:3]
@@ -76,7 +76,7 @@ def filter_glyph(input, pt):
                     g_double_quote_mode = not g_double_quote_mode
                 else:
                     intmed += punctmap[c]
-            elif uimode == mode_i and imodemap.has_key(c):
+            elif uimode == mode_i and (c in imodemap):
                 intmed += imodemap[c]
             elif uimode[:1] == mode_u:
                 uimode += c
@@ -119,11 +119,11 @@ def quanpin_transform(item, qptable):
                 continue
             end = index+i
             matchstr = item[index:end]
-            if qptable.has_key(matchstr):
+            if matchstr in qptable:
                 # special case for fanguo, which should be fan'guo 
                 tempstr = item[end-1:end+1]
                 if tempstr == "gu" or tempstr == "nu" or tempstr == "ni":
-                    if qptable.has_key(matchstr[:-1]):
+                    if matchstr[:-1] in qptable:
                         i -= 1
                         matchstr = matchstr[:-1]
                 # this is for ibus' rule
@@ -136,7 +136,7 @@ def quanpin_transform(item, qptable):
                 or (tempstr4 == "nong" or tempstr3 == "nou") \
                 or (tempstr == "ga" or tempstr == "na") \
                 or tempstr2 == "ier":
-                    if qptable.has_key(matchstr[:-1]):
+                    if matchstr[:-1] in qptable:
                         i -= 1
                         matchstr = matchstr[:-1]
                 ptrmap[len(pinyinstr)] = index
@@ -202,12 +202,12 @@ def shuangpin_transform(item, sptable):
             else:
                 sp1 = item[index]
             itmmap[word_count] = filter_glyph(item[last_word_ptr:index], sptable)
-            if sptable.has_key(sp1):
+            if sp1 in sptable:
                 # the last odd shuangpin code are output as only shengmu
                 ptrmap[len(pinyinstr)] = index
                 pinyinlist.append((sp1, len(pinyinstr)))
                 pinyinstr += sptable[sp1]+bchar
-            elif alias1.has_key(sp1):
+            elif sp1 in alias1:
                 ptrmap[len(pinyinstr)] = index
                 pinyinlist.append((alias2[sp1], len(pinyinstr)))
                 pinyinstr += alias1[sp1]+bchar
@@ -346,14 +346,14 @@ def remote_parse(kbmap, debug):
             # 按全部解析出的输入判定
             index = pyl[wc][1]
             key = ori
-            if userzk.has_key(key):
+            if key in userzk:
                 for item in userzk[key].split(" "):
                     if item[0] == "#":
                         break
                     ret.append((item, index))
             # 按带断字符的方式判定
             key = pys
-            if userzk.has_key(key):
+            if key in userzk:
                 for item in userzk[key].split(" "):
                     if item[0] == "#":
                         break
@@ -362,7 +362,7 @@ def remote_parse(kbmap, debug):
             # 按原始输入来检查用户词库，支持不带断字符的双拼原始码用户词库
             index = pyl[wc][1]
             key = ori
-            if userzk.has_key(key):
+            if key in userzk:
                 for item in userzk[key].split(" "):
                     if item[0] == "#":
                         break
@@ -441,14 +441,14 @@ def local_parse_quanpin(kbmap, debug):
         # 按全部解析出的输入判定
         index = pyl[wc][1]
         key = ori
-        if userzk.has_key(key):
+        if key in userzk:
             for item in userzk[key].split(" "):
                 if item[0] == "#":
                     break
                 ret.append((item, index))
         # 按带断字符的方式判定
         key = pys
-        if userzk.has_key(key):
+        if key in userzk:
             for item in userzk[key].split(" "):
                 if item[0] == "#":
                     break
@@ -460,22 +460,22 @@ def local_parse_quanpin(kbmap, debug):
     if not g_gae:
         if wc >= 4:
             key, index = getquanpin(pyl, 4)
-            if zk4.has_key(key):
+            if key in zk4:
                 for item in zk4[key].split(" "):
                     ret.append((item, index))
         elif wc == 3:
             key, index = getquanpin(pyl, 3)
-            if zk3.has_key(key):
+            if key in zk3:
                 for item in zk3[key].split(" "):
                     ret.append((item, index))
     if wc > 1:
         key, index = getquanpin(pyl, 2)
-        if zk.has_key(key):
+        if key in zk:
             for item in zk[key].split(" "):
                 ret.append((item, index))
     if wc > 0:
         key, index = getquanpin(pyl, 1)
-        if zk.has_key(key):
+        if key in zk:
             for item in zk[key].split(" "):
                 ret.append((item, index))
     if len(ret) == 0:
@@ -503,14 +503,14 @@ def local_parse_shuangpin(kbmap, debug):
         # 按原始输入来检查用户词库，支持不带断字符的双拼原始码用户词库
         index = pyl[wc][1]
         key = ori
-        if userzk.has_key(key):
+        if key in userzk:
             for item in userzk[key].split(" "):
                 if item[0] == "#":
                     break
                 ret.append((item, index))
         # 按带断字符的方式判定
         key = pys
-        if userzk.has_key(key):
+        if key in userzk:
             for item in userzk[key].split(" "):
                 if item[0] == "#":
                     break
@@ -522,22 +522,22 @@ def local_parse_shuangpin(kbmap, debug):
     if not g_gae:
         if wc == 4 or wc > 5:
             key, index = getshuangpin(pyl, 4)
-            if zk4.has_key(key):
+            if key in zk4:
                 for item in zk4[key].split(" "):
                     ret.append((item, index))
         if wc == 3 or wc > 4:
             key, index = getshuangpin(pyl, 3)
-            if zk3.has_key(key):
+            if key in zk3:
                 for item in zk3[key].split(" "):
                     ret.append((item, index))
     if wc >= 2:
         key, index = getshuangpin(pyl, 2)
-        if zk.has_key(key):
+        if key in zk:
             for item in zk[key].split(" "):
                 ret.append((item, index))
     if wc == 1 or wc == 2:
         key, index = getshuangpin(pyl, 1)
-        if zk.has_key(key):
+        if key in zk:
             for item in zk[key].split(" "):
                 ret.append((item, index))
     if len(ret) == 0:
@@ -565,11 +565,11 @@ def parse_glyph(map):
     wordptr = map[0]
     mzk = tzk
     for k in xmcode:
-        if mzk.has_key(k):
+        if k in mzk:
             lzk, mzk = mzk, mzk[k]
             if type(mzk).__name__ == "list":
                 for item in mzk:
-                    if rzk.has_key(item):
+                    if item in rzk:
                         ret.append((item+intermed, rzk[item], wordptr))
                     else:
                         ret.append((item+intermed, "", wordptr))
@@ -586,7 +586,7 @@ def parse_glyph(map):
         retlist.sort()
         for item in retlist:
             start = len(xmcode)
-            if rzk.has_key(item):
+            if item in rzk:
                 ret.append((item+intermed, xmzk[item][start:]+rzk[item], wordptr))
             else:
                 ret.append((item+intermed, xmzk[item][start:], wordptr))
@@ -739,13 +739,13 @@ def wubi_parse(keyb, debug):
         pykb = keyb.lstrip("`")
         pinyin_table = data.get(data.get_py_table)
         pyzk = data.get(data.load_alpha_pyzk1)
-        if pyzk.has_key(pykb):
+        if pykb in pyzk:
             items = pyzk[pykb][1]
             for item in items.split(" "):
                 ret.append((item, "", len(keyb)))
     else:
         wbzk = data.get(data.load_alpha_xmzk2)
-        if wbzk.has_key(keyb):
+        if keyb in wbzk:
             items = wbzk[keyb][1]
             for item in items.split(" "):
                 if len(item) > 0:
@@ -783,7 +783,7 @@ def parse(keyb, debug=False):
             ret = str(ret)
         return [(ret, "__", len(keyb))]
     mode = data.g_mode
-    if parsefunc.has_key(mode):
+    if mode in parsefunc:
         return parsefunc[mode](keyb, debug)
     else:
         return []
