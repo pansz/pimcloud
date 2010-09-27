@@ -124,11 +124,14 @@ class Engine(ibus.EngineBase):
                 try:
                     text, index, hint = item.split("\t")
                     index = int(index)
-                    if hint == "_":
-                        display_text = text + pestr[index:]
+                    if index < len(pestr):
+                        postfix = ".."
                     else:
-                        display_text = "%s%s(%s)" % \
-                                (text, pestr[index:], hint)
+                        postfix = ""
+                    if hint == "_":
+                        display_text = text + postfix
+                    else:
+                        display_text = "%s%s%s" % (text, postfix, hint)
                     ibt = ibus.Text(display_text)
                     ibt.index = index
                     ibt.commit_text = text
