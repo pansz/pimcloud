@@ -162,7 +162,7 @@ class Engine(ibus.EngineBase):
             pass
 
         return True
-    def sentence_update(self):
+    def __sentence_update(self):
         self.__lookup_table.clean()
         self.cloud_query(self.__preedit_string)
         self.__update_lookup_table()
@@ -171,6 +171,12 @@ class Engine(ibus.EngineBase):
             self.__invalidate()
         else:
             self.state_transit(self.state_input)
+    def __select_candidate(self, index):
+        candidates = self.__lookup_table.get_candidates_in_current_page()
+        if index < len(candidates):
+            self.__commit_string(candidates[index])
+            if self.state_is(self.state_select):
+                self.__sentence_update()
     def state_select(self, keyval, keycode, state):
         if keyval == keysyms.Return:
             self.__commit_string(self.__preedit_string)
@@ -185,16 +191,12 @@ class Engine(ibus.EngineBase):
         elif keyval == keysyms.space:
             self.__commit_string(self.__lookup_table.get_current_candidate())
             if self.state_is(self.state_select):
-                self.sentence_update()
+                self.__sentence_update()
         elif keyval >= keysyms._0 and keyval <= keysyms._9:
             index = keyval - keysyms._1
             if index < 0:
                 index = 9
-            candidates = self.__lookup_table.get_candidates_in_current_page()
-            if index < len(candidates):
-                self.__commit_string(candidates[index])
-                if self.state_is(self.state_select):
-                    self.sentence_update()
+            self.__select_candidate(index)
         elif keyval == keysyms.minus:
             self.page_up()
             self.__update()
@@ -321,4 +323,4 @@ class Engine(ibus.EngineBase):
             if index < len(candidates):
                 self.__commit_string(candidates[index])
                 if self.state_is(self.state_select):
-                    self.sentence_update()
+                    self.__sentence_update()
