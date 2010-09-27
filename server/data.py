@@ -227,7 +227,7 @@ def create_shuangpin_table(rules):
     elif g_mode == "ms":
         sptable["__alias1__"] = {"jv":"jue", "qv":"que", "xv":"xue", "yv":"yue"}
         sptable["__alias2__"] = {"jv":"jt", "qv":"qt", "xv":"xt", "yv":"yt"}
-    if g_mode == "nature":
+    elif g_mode == "nature":
         sptable["__alias1__"] = {"jv":"ju", "qv":"qu", "xv":"xu", "yv":"yu", 
                 "aa":"a", "ee":"e"}
         sptable["__alias2__"] = {"jv":"ju", "qv":"qu", "xv":"xu", "yv":"yu",
