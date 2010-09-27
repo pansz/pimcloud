@@ -319,8 +319,4 @@ class Engine(ibus.EngineBase):
 
     def candidate_clicked(self, index, button, state):
         if state == 0 and button == 1:
-            candidates = self.__lookup_table.get_candidates_in_current_page()
-            if index < len(candidates):
-                self.__commit_string(candidates[index])
-                if self.state_is(self.state_select):
-                    self.__sentence_update()
+            self.__select_candidate(index)
