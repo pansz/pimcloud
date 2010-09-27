@@ -32,7 +32,7 @@ class Engine(ibus.EngineBase):
         self.__is_invalidate = False
         self.__preedit_string = u""
         self.__lookup_table = ibus.LookupTable()
-        self.__lookup_table.set_page_size(5)
+        self.__lookup_table.set_page_size(10)
         self.__prop_list = ibus.PropList()
         self.__prop_list.append(ibus.Property(u"test", icon = u"/usr/share/ibus-mycloud/icons/prop.svg"))
         self.__state = self.state_empty
@@ -125,13 +125,11 @@ class Engine(ibus.EngineBase):
                     text, index, hint = item.split("\t")
                     index = int(index)
                     if index < len(pestr):
-                        postfix = ".."
+                        display_text = text + ".."
+                    elif hint == "_":
+                        display_text = text
                     else:
-                        postfix = ""
-                    if hint == "_":
-                        display_text = text + postfix
-                    else:
-                        display_text = "%s%s%s" % (text, postfix, hint)
+                        display_text = text + hint
                     ibt = ibus.Text(display_text)
                     ibt.index = index
                     ibt.commit_text = text
