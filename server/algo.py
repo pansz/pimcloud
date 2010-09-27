@@ -239,50 +239,49 @@ def shuangpin_transform(item, sptable):
 
 # 插入中间的非中文输入到返回文字中，并进行附加的形码本地解析
 def process(item, map, rzk):
-    wc = len(item)/3
-    twc = map["word_count"]
+    unitem = unicode(item,"utf-8")
+    wc = len(unitem)            # 本次匹配码长
+    twc = map["word_count"]     # 总期望码长
     # 如果搜索返回了大于期望字长的字，则忽略
     if wc > twc:
         return "", ""
-    newoutput = map["itmmap"][0][0] + map["itmmap"][0][1]
-    for i in xrange(len(item)/3):
-        start = i*3
-        end = i*3+3
+    outlist = [map["itmmap"][0][0], map["itmmap"][0][1]]
+    for i in xrange(wc):
+        outlist.append(unitem[i].encode("utf-8"))
         if map["itmmap"].has_key(i+1):
-            glyph = map["itmmap"][i+1][0]
-            if glyph == "":
-                newoutput += item[start:end]
-            else:
-                word = item[start:end]
-                if rzk.has_key(word):
-                    if rzk[word].startswith(glyph):
-                        newoutput += word
-                    else:
-                        return "", ""
-                else:
-                    return "", ""
-            newoutput += map["itmmap"][i+1][1]
-        else:
-            newoutput += item[start:end]
+            outlist.append(map["itmmap"][i+1][1])
+    newoutput = "".join(outlist)
     # display hint
+    hint = "_"
+    matchword = map["itmmap"][twc][0]
     if wc == 1:
         if rzk.has_key(item):
-            start = len(map["itmmap"][wc][0])
-            hint = rzk[item][start:]
+            hint = rzk[item]
         else:
             if twc > 1:
                 # 对于多字输入的情形，隐藏不含形码的单字。
                 return "", ""
-            else:
-                hint = "_"
-    elif wc >= 2:
-        if rzk.has_key(item[-3:]):
-            start = len(map["itmmap"][wc][0])
-            hint = rzk[item[-3:]][start:]
-        else:
-            hint = "_"
-    else:
-        hint = "_"
+    elif wc == 2:
+        key1 = unitem[0].encode("utf-8")
+        key2 = unitem[1].encode("utf-8")
+        if rzk.has_key(key1) and rzk.has_key(key2):
+            hint = rzk[key1][0:2] + rzk[key2][0:2]
+    elif wc == 3:
+        key1 = unitem[0].encode("utf-8")
+        key2 = unitem[1].encode("utf-8")
+        key3 = unitem[2].encode("utf-8")
+        if rzk.has_key(key1) and rzk.has_key(key2) and rzk.has_key(key3):
+            hint = rzk[key1][0] + rzk[key2][0] + rzk[key3][0:2]
+    elif wc >= 4:
+        key1 = unitem[0].encode("utf-8")
+        key2 = unitem[1].encode("utf-8")
+        key3 = unitem[2].encode("utf-8")
+        key4 = unitem[-1].encode("utf-8")
+        if rzk.has_key(key1) and rzk.has_key(key2) and rzk.has_key(key3) and rzk.has_key(key4):
+            hint = rzk[key1][0] + rzk[key2][0] + rzk[key3][0] + rzk[key4][0]
+    # filter words according to the hint
+    if hint.find(matchword) < 0:
+        return "", ""
     return newoutput, hint
 
 def ime_callback(str, keyb, dummy):
