@@ -319,7 +319,7 @@ def process(item, map, rzk):
     # filter words according to the hint
     if hint.find(matchword) < 0:
         return "", ""
-    elif len(hint) > 1:
+    elif len(hint) > 1 and wc == twc:
         return newoutput, check_glyph(hint, matchword)
     else:
         return newoutput, hint
@@ -686,6 +686,13 @@ def shuangpin_parse(keyb, debug):
         result = local_parse_shuangpin(map, debug)
     elif map["word_count"] < 5 and not g_gae:
         result = local_parse_shuangpin(map, debug)
+        # 三字词本地词库不全
+        if len(result) > 0 and map["word_count"] == 3:
+            finished = map.get(result[0][1],result[0][1])
+            if finished < len(keyb):
+                result2 = remote_parse(map, debug)
+                if len(result2) > 1:
+                    result = result2
     else:
         # 当远程解析超时或者无结果时，启用本地解析
         result = remote_parse(map, debug)
