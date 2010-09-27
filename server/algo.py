@@ -237,6 +237,43 @@ def shuangpin_transform(item, sptable):
 
     return ptrmap
 
+def clear_glyph_cache():
+    global g_glyph_cache
+    g_glyph_cache = []
+
+def get_choice(hint):
+    lh = len(hint)
+    if lh >= 4:
+        return (hint[0], hint[1], hint[2], hint[3], hint[0:2], hint[1:3], hint[2:4], hint[0:3], hint[1:4], hint)
+    elif lh == 3: 
+        return (hint[0], hint[1], hint[2], hint[0:2], hint[1:3], hint)
+    elif lh == 2: 
+        return (hint[0], hint[1], hint)
+    elif lh == 1: 
+        return (hint, )
+    else:
+        return ()
+
+def check_glyph(hint, matchword):
+    global g_glyph_cache
+    if g_glyph_cache != []:
+        if matchword != "":
+            st = hint.find(matchword) + len(matchword)
+            choices = get_choice(hint[st:])
+        else:
+            choices = get_choice(hint)
+
+        for key in choices:
+            mkey = matchword+key
+            for item in g_glyph_cache:
+                if item.find(mkey) >= 0:
+                    break
+            else:
+                g_glyph_cache.append(hint)
+                return key
+    g_glyph_cache.append(hint)
+    return "_"
+
 # 插入中间的非中文输入到返回文字中，并进行附加的形码本地解析
 def process(item, map, rzk):
     unitem = unicode(item,"utf-8")
@@ -251,7 +288,7 @@ def process(item, map, rzk):
         if map["itmmap"].has_key(i+1):
             outlist.append(map["itmmap"][i+1][1])
     newoutput = "".join(outlist)
-    # display hint
+    # calculate hint
     hint = "_"
     matchword = map["itmmap"][twc][0]
     if wc == 1:
@@ -282,7 +319,11 @@ def process(item, map, rzk):
     # filter words according to the hint
     if hint.find(matchword) < 0:
         return "", ""
-    return newoutput, hint
+    elif len(hint) > 1:
+        return newoutput, check_glyph(hint, matchword)
+    else:
+        return newoutput, hint
+    #return newoutput, hint
 
 def ime_callback(str, keyb, dummy):
     ret = []
@@ -612,6 +653,7 @@ def quanpin_parse(keyb, debug):
         ret = []
         rzk = data.get(data.load_reverse_xmzk)
         # 解析有拼音输入时的形码过滤
+        clear_glyph_cache()
         for item,index in result:
             if index == -1:
                 ret.append((item, "_", index))
@@ -658,6 +700,7 @@ def shuangpin_parse(keyb, debug):
         ret = []
         rzk = data.get(data.load_reverse_xmzk)
         # 解析有拼音输入时的形码过滤
+        clear_glyph_cache()
         for item,index in result:
             if index == -1:
                 ret.append((item, "_", index))
