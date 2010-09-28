@@ -21,6 +21,7 @@
 import gobject
 import mycloud
 import ibus
+import pango
 from ibus import keysyms
 from ibus import modifier
 
@@ -132,6 +133,8 @@ class Engine(ibus.EngineBase):
                     ibt = ibus.Text(display_text)
                     ibt.index = index
                     ibt.commit_text = text
+                    attr = ibus.AttrList()
+                    attr.append(ibus.AttributeForeground(pango.Color("Red"), 0, preedit_len))
                     self.__lookup_table.append_candidate(ibt)
                 except ValueError:
                     pass
@@ -288,14 +291,14 @@ class Engine(ibus.EngineBase):
             ibt = ibus.Text(self.__preedit_string, attr)
             self.update_auxiliary_text(ibt, True)
             preedit_len = len(self.__preedit_string)
-            attr.append(ibus.AttributeUnderline(ibus.ATTR_UNDERLINE_SINGLE, 0, preedit_len))
+            attr.append(ibus.AttributeUnderline(pango.UNDERLINE_SINGLE, 0, preedit_len))
             self.update_preedit_text(ibt, preedit_len, True)
         elif self.state_is(self.state_select):
             self.update_auxiliary_text(ibus.Text(self.__preedit_string), True)
             ibt = self.__lookup_table.get_current_candidate()
             attr = ibus.AttrList()
             preedit_len = len(unicode(ibt.commit_text, "utf-8"))
-            attr.append(ibus.AttributeUnderline(ibus.ATTR_UNDERLINE_SINGLE, 0, preedit_len))
+            attr.append(ibus.AttributeUnderline(pango.UNDERLINE_SINGLE, 0, preedit_len))
             self.update_preedit_text(ibus.Text(ibt.commit_text, attr), preedit_len, True)
         else:
             pass
