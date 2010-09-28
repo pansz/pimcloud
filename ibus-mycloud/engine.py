@@ -19,7 +19,6 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 import gobject
-import pango
 import mycloud
 import ibus
 from ibus import keysyms
@@ -91,7 +90,7 @@ class Engine(ibus.EngineBase):
             # since we bypassed a-zA-Z0-9, we got all symbols
             res = self.__query_char(keyval)
             if res != "":
-                self.__commit_string(res)
+                self.__commit_string(unicode(res,"utf-8"))
                 return True
             else:
                 pass
@@ -289,14 +288,14 @@ class Engine(ibus.EngineBase):
             ibt = ibus.Text(self.__preedit_string, attr)
             self.update_auxiliary_text(ibt, True)
             preedit_len = len(self.__preedit_string)
-            attr.append(ibus.AttributeUnderline(pango.UNDERLINE_SINGLE, 0, preedit_len))
+            attr.append(ibus.AttributeUnderline(ibus.ATTR_UNDERLINE_SINGLE, 0, preedit_len))
             self.update_preedit_text(ibt, preedit_len, True)
         elif self.state_is(self.state_select):
             self.update_auxiliary_text(ibus.Text(self.__preedit_string), True)
             ibt = self.__lookup_table.get_current_candidate()
             attr = ibus.AttrList()
             preedit_len = len(unicode(ibt.commit_text, "utf-8"))
-            attr.append(ibus.AttributeUnderline(pango.UNDERLINE_SINGLE, 0, preedit_len))
+            attr.append(ibus.AttributeUnderline(ibus.ATTR_UNDERLINE_SINGLE, 0, preedit_len))
             self.update_preedit_text(ibus.Text(ibt.commit_text, attr), preedit_len, True)
         else:
             pass
