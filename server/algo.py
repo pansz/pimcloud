@@ -239,7 +239,9 @@ def shuangpin_transform(item, sptable):
 
 def clear_glyph_cache():
     global g_glyph_cache
+    global g_glyph_first
     g_glyph_cache = []
+    g_glyph_first = True
 
 def get_choice(hint):
     lh = len(hint)
@@ -254,25 +256,38 @@ def get_choice(hint):
     else:
         return ()
 
-def check_glyph(hint, matchword):
+def check_glyph(newoutput, hint, matchword):
     global g_glyph_cache
-    if g_glyph_cache != []:
-        if matchword != "":
-            st = hint.find(matchword) + len(matchword)
-            choices = get_choice(hint[st:])
+    global g_glyph_first
+    if g_glyph_first:
+        g_glyph_first = False
+        g_glyph_cache.append("_")
+        if matchword == "":
+            return newoutput, "_"
         else:
-            choices = get_choice(hint)
+            return "", ""
+    ind = hint.find(matchword)
+    if ind < 0:
+        newoutput = ""
+    if g_glyph_cache != []:
+        choices = get_choice(hint)
 
         for key in choices:
-            mkey = matchword+key
             for item in g_glyph_cache:
-                if item.find(mkey) >= 0:
+                if item.find(key) >= 0:
+                    # jump to outter for loop
                     break
             else:
-                g_glyph_cache.append(hint)
-                return key
+                g_glyph_cache.append(key)
+                if matchword != "":
+                    if key.startswith(matchword):
+                        return newoutput, key[len(matchword):]
+                    else:
+                        return "", ""
+                else:
+                    return newoutput, key
     g_glyph_cache.append(hint)
-    return "_"
+    return newoutput, "_"
 
 # 插入中间的非中文输入到返回文字中，并进行附加的形码本地解析
 def process(item, map, rzk):
@@ -317,12 +332,12 @@ def process(item, map, rzk):
         if rzk.has_key(key1) and rzk.has_key(key2) and rzk.has_key(key3) and rzk.has_key(key4):
             hint = rzk[key1][0] + rzk[key2][0] + rzk[key3][0] + rzk[key4][0]
     # filter words according to the hint
-    if hint.find(matchword) < 0:
-        return "", ""
-    elif len(hint) > 1 and wc == twc:
-        return newoutput, check_glyph(hint, matchword)
-    else:
+    if len(hint) > 1 and wc == twc:
+        return check_glyph(newoutput, hint, matchword)
+    elif matchword == "":
         return newoutput, hint
+    else:
+        return "", ""
     #return newoutput, hint
 
 def ime_callback(str, keyb, dummy):
@@ -687,7 +702,7 @@ def shuangpin_parse(keyb, debug):
     elif map["word_count"] < 5 and not g_gae:
         result = local_parse_shuangpin(map, debug)
         # 三字词本地词库不全
-        if len(result) > 0 and map["word_count"] == 3:
+        if len(result) > 0 and map["word_count"] >= 3:
             finished = map.get(result[0][1],result[0][1])
             if finished < len(keyb):
                 result2 = remote_parse(map, debug)
