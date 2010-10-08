@@ -1,0 +1,3 @@
+cd ../server
+rm /tmp/mycloud_qp.tar.bz2
+tar -jcf /tmp/mycloud_qp.tar.bz2 4corner.txt algo.py appengine.py ChangeLog data.py mycloud mysocket.py qpserver qptest quanpin1.txt quanpin2.txt quanpin3.txt quanpin4.txt
