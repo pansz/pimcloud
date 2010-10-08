@@ -19,9 +19,9 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 import gobject
-import pango
 import mycloud
 import ibus
+import pango
 from ibus import keysyms
 from ibus import modifier
 
@@ -32,7 +32,7 @@ class Engine(ibus.EngineBase):
         self.__is_invalidate = False
         self.__preedit_string = u""
         self.__lookup_table = ibus.LookupTable()
-        self.__lookup_table.set_page_size(5)
+        self.__lookup_table.set_page_size(10)
         self.__prop_list = ibus.PropList()
         self.__prop_list.append(ibus.Property(u"test", icon = u"/usr/share/ibus-mycloud/icons/prop.svg"))
         self.__state = self.state_empty
@@ -91,7 +91,7 @@ class Engine(ibus.EngineBase):
             # since we bypassed a-zA-Z0-9, we got all symbols
             res = self.__query_char(keyval)
             if res != "":
-                self.__commit_string(res)
+                self.__commit_string(unicode(res,"utf-8"))
                 return True
             else:
                 pass
@@ -125,16 +125,16 @@ class Engine(ibus.EngineBase):
                     text, index, hint = item.split("\t")
                     index = int(index)
                     if index < len(pestr):
-                        postfix = ".."
+                        display_text = text + ".."
+                    elif hint == "_":
+                        display_text = text
                     else:
-                        postfix = ""
-                    if hint == "_":
-                        display_text = text + postfix
-                    else:
-                        display_text = "%s%s%s" % (text, postfix, hint)
+                        display_text = text + hint
                     ibt = ibus.Text(display_text)
                     ibt.index = index
                     ibt.commit_text = text
+                    attr = ibus.AttrList()
+                    attr.append(ibus.AttributeForeground(pango.Color("Red"), 0, preedit_len))
                     self.__lookup_table.append_candidate(ibt)
                 except ValueError:
                     pass
