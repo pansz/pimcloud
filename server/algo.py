@@ -245,16 +245,9 @@ def clear_glyph_cache():
 
 def get_choice(hint):
     lh = len(hint)
-    if lh >= 4:
-        return (hint[0], hint[1], hint[2], hint[3], hint[0:2], hint[1:3], hint[2:4], hint[0:3], hint[1:4], hint)
-    elif lh == 3: 
-        return (hint[0], hint[1], hint[2], hint[0:2], hint[1:3], hint)
-    elif lh == 2: 
-        return (hint[0], hint[1], hint)
-    elif lh == 1: 
-        return (hint, )
-    else:
-        return ()
+    for tl in range(lh):
+        for sl in range(lh-tl):
+            yield hint[sl:sl+tl+1]
 
 def check_glyph(newoutput, hint, matchword):
     global g_glyph_cache
@@ -266,13 +259,10 @@ def check_glyph(newoutput, hint, matchword):
             return newoutput, "_"
         else:
             return "", ""
-    ind = hint.find(matchword)
-    if ind < 0:
+    if hint.find(matchword) < 0:
         newoutput = ""
     if g_glyph_cache != []:
-        choices = get_choice(hint)
-
-        for key in choices:
+        for key in get_choice(hint):
             for item in g_glyph_cache:
                 if item.find(key) >= 0:
                     # jump to outter for loop
