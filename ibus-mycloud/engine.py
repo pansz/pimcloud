@@ -1,4 +1,5 @@
 # vim:set et sts=4 sw=4:
+# coding: utf-8
 #
 # ibus-mycloud - Personal Input Method Cloud Front-end for iBus
 #
@@ -31,7 +32,10 @@ class Engine(ibus.EngineBase):
         super(Engine, self).__init__(bus, object_path)
         self.__is_invalidate = False
         self.__preedit_string = u""
-        self.__lookup_table = ibus.LookupTable()
+        labels = []
+        for i in ( "①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"):
+            labels.append(ibus.Text(unicode(i, "utf-8")))
+        self.__lookup_table = ibus.LookupTable(labels=labels)
         self.__lookup_table.set_page_size(10)
         self.__prop_list = ibus.PropList()
         self.__prop_list.append(ibus.Property(u"test", icon = u"/usr/share/ibus-mycloud/icons/prop.svg"))
