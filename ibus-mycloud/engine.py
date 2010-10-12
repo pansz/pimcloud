@@ -432,14 +432,7 @@ class Engine(ibus.EngineBase):
             preedit_len = len(self.__preedit_string)
             attr.append(ibus.AttributeUnderline(pango.UNDERLINE_SINGLE, 0, preedit_len))
             self.update_preedit_text(ibt, preedit_len, True)
-        elif self.state_is(self.state_select_static):
-            self.update_auxiliary_text(ibus.Text(self.__preedit_string), True)
-            ibt = self.__lookup_table.get_current_candidate()
-            attr = ibus.AttrList()
-            preedit_len = len(unicode(ibt.commit_text, "utf-8"))
-            attr.append(ibus.AttributeUnderline(pango.UNDERLINE_SINGLE, 0, preedit_len))
-            self.update_preedit_text(ibus.Text(ibt.commit_text, attr), preedit_len, True)
-        elif self.state_is(self.state_select_dynamic):
+        elif self.state_is(self.state_select):
             self.update_auxiliary_text(ibus.Text(self.__preedit_string), True)
             ibt = self.__lookup_table.get_current_candidate()
             attr = ibus.AttrList()
