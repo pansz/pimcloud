@@ -4,7 +4,7 @@ This file is utf-8 encoding!
 
 About mycloud:
 
-    mycloud is the official VimIM Server and Client
+    mycloud is the official VimIM Cloud Server and Client
 
     mycloud is released under GNU GPL, see the file named LICENSE
 
@@ -30,13 +30,7 @@ About vimim-mycloud:
 
     libmycloud.so 为 32 位 Linux 使用，64 位 Linux 用户请从源代码编译。
 
-    mycloud.py 为 python 版本，任何支持 python 的平台可使用。
-
-    三者选一即可，不需全部使用。
-
-About vimim-mycloud-src:
-
-    如果需要其它平台的 libmycloud，可使用源代码自行编译。
+    如果需要其它平台的 libmycloud，可使用 src 目录下的源代码自行编译。
 
     使用 Cygwin 1.7 以上编译 windows 版本，install 将安装至 ~/vimfiles/plugin
 
@@ -52,7 +46,7 @@ About vimim-mycloud-src:
 
 About ibus-mycloud:
 
-    ibus-mycloud 是给 ibus 作为客户端的。
+    这是给 ibus 作为客户端的。
     他没有依赖，只要有 ibus ，直接 make install 即可。
     make 命令的缺省目标用于调试，一般不用。
 
