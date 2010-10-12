@@ -14,5 +14,5 @@ util/ms1.txt
 util/ms2.txt
 util/ms3.txt
 util/ms4.txt
-vimim-mycloud-src/libvimim.so
-vimim-mycloud-src/Makefile
+vimim-mycloud/src/libvimim.so
+vimim-mycloud/src/Makefile
