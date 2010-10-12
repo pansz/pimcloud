@@ -23,8 +23,8 @@ About server:
 
     关于 GAE，GAE 的版本发布在 pim-cloud，仅供测试用途，如果您希望自行使用，请自己建一个 GAE 应用并上传。
 
-About client:
-    client 是给 vimim 准备的客户端。
+About vimim-mycloud:
+    这是是给 vimim 准备的客户端。
 
     libmycloud.dll 为 Windows 使用
 
@@ -34,7 +34,7 @@ About client:
 
     三者选一即可，不需全部使用。
 
-About client-src:
+About vimim-mycloud-src:
 
     如果需要其它平台的 libmycloud，可使用源代码自行编译。
 
