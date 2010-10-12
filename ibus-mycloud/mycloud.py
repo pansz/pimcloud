@@ -58,9 +58,9 @@ def tcpsend(data, host, port):
     s.close()
     return ret
 
-def parsefunc(keyb, host="localhost"):
+def parsefunc(keyb, host, port):
     src = keyb.encode("base64")
-    ret = tcpsend(src, host, 10007)
+    ret = tcpsend(src, host, port)
     if type(ret).__name__ == "str":
         try:
             return ret.decode("base64")
@@ -74,9 +74,9 @@ def main():
     if argc == 1:
         pass
     elif argc == 2:
-        sys.stdout.write(parsefunc(sys.argv[1]))
+        sys.stdout.write(parsefunc(sys.argv[1], "localhost", 10007))
     elif argc == 3:
-        sys.stdout.write(parsefunc(sys.argv[2], sys.argv[1]))
+        sys.stdout.write(parsefunc(sys.argv[2], sys.argv[1], 10007))
     else:
         pass
 
