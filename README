@@ -50,3 +50,6 @@ About ibus-mycloud:
     他没有依赖，只要有 ibus ，直接 make install 即可。
     make 命令的缺省目标用于调试，一般不用。
 
+    ibus-mycloud 的配置文件存放在 ~/.config/ibus/mycloud.json 
+
+
