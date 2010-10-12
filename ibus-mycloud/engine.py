@@ -25,6 +25,48 @@ import ibus
 import pango
 from ibus import keysyms
 from ibus import modifier
+import json
+import os
+
+def load_config():
+    dname = os.path.expanduser("~/.config/ibus")
+    fname = dname+"/mycloud.json"
+    try:
+        fp = open(fname, "r")
+        file_exists = True
+    except Exception:
+        file_exists = False
+    if file_exists:
+        try:
+            ret = json.load(fp)
+            fp.close()
+            try:
+                fp = open(fname, "w")
+                json.dump(ret, fp, sort_keys=True, indent=4)
+                fp.close()
+            except Exception, inst:
+                print type(inst).__name__, inst
+            return ret
+        except Exception:
+            file_exists = False
+
+    try:
+        os.mkdirs(dname)
+    except Exception:
+        pass
+    try:
+        defaults = {
+            u"host" : u"127.0.0.1",
+            u"port" : 10007,
+            u"pagesize" : 10,
+            u"static" : True,
+            }
+        fp = open(fname, "w")
+        json.dump(defaults, fp, sort_keys=True, indent=4)
+        fp.close()
+    except Exception, inst:
+        print type(inst).__name__, inst
+    return defaults
 
 class Engine(ibus.EngineBase):
 
@@ -36,10 +78,18 @@ class Engine(ibus.EngineBase):
         for i in ( "①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"):
             labels.append(ibus.Text(unicode(i, "utf-8")))
         self.__lookup_table = ibus.LookupTable(labels=labels)
-        self.__lookup_table.set_page_size(10)
+        self.conf = load_config()
+        self.__lookup_table.set_page_size(self.conf.get(u"pagesize", 10))
         self.__prop_list = ibus.PropList()
-        self.__prop_list.append(ibus.Property(u"option", icon = u"/usr/share/ibus-mycloud/icons/prop.svg"))
-        self.set_static_mode(False)
+        prop = ibus.Property(u"option", icon = u"/usr/share/ibus-mycloud/icons/prop.svg")
+        if self.conf.get(u"static", True):
+            prop.state = 0
+        else:
+            prop.state = 1
+        self.__prop_list.append(prop)
+        self.__host = self.conf.get(u"host", "127.0.0.1")
+        self.__port = self.conf.get(u"port", 10007)
+        self.set_static_mode(self.conf.get(u"static", True))
 
     def set_static_mode(self, static_mode):
         if (static_mode):
@@ -189,7 +239,7 @@ class Engine(ibus.EngineBase):
             pass
         return False
     def cloud_query_default(self, pestr):
-        res = mycloud.parsefunc(pestr.encode("utf-8"), "172.16.55.240")
+        res = mycloud.parsefunc(pestr, self.__host, self.__port)
         preedit_len = len(pestr)
         if res != "":
             item = res.split("\n")[0]
@@ -206,7 +256,7 @@ class Engine(ibus.EngineBase):
         ibt.commit_text = pestr
         return ibt
     def cloud_query(self, pestr):
-        res = mycloud.parsefunc(pestr.encode("utf-8"), "172.16.55.240")
+        res = mycloud.parsefunc(pestr, self.__host, self.__port)
         if res != "":
             preedit_len = len(pestr)
             for item in res.split("\n"):
@@ -318,7 +368,7 @@ class Engine(ibus.EngineBase):
         return True
 
     def __query_char(self, keyval):
-        res = mycloud.parsefunc(chr(keyval), "172.16.55.240")
+        res = mycloud.parsefunc(chr(keyval), self.__host, self.__port)
         if res != "":
             item = res.split("\n")
             if item:
