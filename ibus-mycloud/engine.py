@@ -1,4 +1,5 @@
 # vim:set et sts=4 sw=4:
+# coding: utf-8
 #
 # ibus-mycloud - Personal Input Method Cloud Front-end for iBus
 #
@@ -24,6 +25,48 @@ import ibus
 import pango
 from ibus import keysyms
 from ibus import modifier
+import json
+import os
+
+def load_config():
+    dname = os.path.expanduser("~/.config/ibus")
+    fname = dname+"/mycloud.json"
+    try:
+        fp = open(fname, "r")
+        file_exists = True
+    except Exception:
+        file_exists = False
+    if file_exists:
+        try:
+            ret = json.load(fp)
+            fp.close()
+            try:
+                fp = open(fname, "w")
+                json.dump(ret, fp, sort_keys=True, indent=4)
+                fp.close()
+            except Exception, inst:
+                print type(inst).__name__, inst
+            return ret
+        except Exception:
+            file_exists = False
+
+    try:
+        os.mkdirs(dname)
+    except Exception:
+        pass
+    try:
+        defaults = {
+            u"host" : u"127.0.0.1",
+            u"port" : 10007,
+            u"pagesize" : 10,
+            u"static" : True,
+            }
+        fp = open(fname, "w")
+        json.dump(defaults, fp, sort_keys=True, indent=4)
+        fp.close()
+    except Exception, inst:
+        print type(inst).__name__, inst
+    return defaults
 
 class Engine(ibus.EngineBase):
 
@@ -31,12 +74,33 @@ class Engine(ibus.EngineBase):
         super(Engine, self).__init__(bus, object_path)
         self.__is_invalidate = False
         self.__preedit_string = u""
-        self.__lookup_table = ibus.LookupTable()
-        self.__lookup_table.set_page_size(10)
+        labels = []
+        for i in ( "①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"):
+            labels.append(ibus.Text(unicode(i, "utf-8")))
+        self.__lookup_table = ibus.LookupTable(labels=labels)
+        self.conf = load_config()
+        self.__lookup_table.set_page_size(self.conf.get(u"pagesize", 10))
         self.__prop_list = ibus.PropList()
-        self.__prop_list.append(ibus.Property(u"test", icon = u"/usr/share/ibus-mycloud/icons/prop.svg"))
-        self.__state = self.state_empty
+        prop = ibus.Property(u"option", icon = u"/usr/share/ibus-mycloud/icons/prop.svg")
+        if self.conf.get(u"static", True):
+            prop.state = 0
+        else:
+            prop.state = 1
+        self.__prop_list.append(prop)
+        self.__host = self.conf.get(u"host", "127.0.0.1")
+        self.__port = self.conf.get(u"port", 10007)
+        self.set_static_mode(self.conf.get(u"static", True))
 
+    def set_static_mode(self, static_mode):
+        if (static_mode):
+            self.state_empty = self.state_empty_static
+            self.state_input = self.state_input_static
+            self.state_select = self.state_select_static
+        else:
+            self.state_empty = self.state_empty_dynamic
+            self.state_input = self.state_select_dynamic
+            self.state_select = self.state_select_dynamic
+        self.__state = self.state_empty
     def process_key_event(self, keyval, keycode, state):
         try:
             is_valid = ((state & 
@@ -56,28 +120,103 @@ class Engine(ibus.EngineBase):
     def state_transit(self, target):
         source = self.__state
         self.__state = target
-        if source == self.state_empty:
-            if target == self.state_input:
+        if source == self.state_empty_static:
+            if target == self.state_input_static:
                 self.__invalidate()
-        elif source == self.state_input:
-            if target == self.state_select:
+        elif source == self.state_input_static:
+            if target == self.state_select_static:
                 self.__update()
-            elif target == self.state_empty:
+            elif target == self.state_empty_static:
                 self.__preedit_string = u""
                 self.__update()
-        elif source == self.state_select:
-            if target == self.state_empty:
+        elif source == self.state_select_static:
+            if target == self.state_empty_static:
                 self.__preedit_string = u""
                 self.__lookup_table.clean()
                 self.__update_lookup_table()
                 self.__update()
-            elif target == self.state_input:
+            elif target == self.state_input_static:
                 self.__lookup_table.clean()
                 self.__update_lookup_table()
                 self.__invalidate()
+        elif source == self.state_empty_dynamic:
+            if target == self.state_select_dynamic:
+                self.__invalidate()
+        elif source == self.state_select_dynamic:
+            if target == self.state_empty_dynamic:
+                self.__preedit_string = u""
+                self.__lookup_table.clean()
+                self.__update_lookup_table()
+                self.__update()
         else:
             pass
-    def state_empty(self, keyval, keycode, state):
+    def state_empty_dynamic(self, keyval, keycode, state):
+        if keyval in xrange(keysyms.a, keysyms.z + 1):
+            self.state_transit(self.state_select)
+            return self.__state(keyval, keycode, state)
+        elif keyval in xrange(keysyms.A, keysyms.Z + 1):
+            pass
+        elif keyval >= keysyms._0 and keyval <= keysyms._9:
+            pass
+        elif keyval in xrange(keysyms.exclam, keysyms.asciitilde+1):
+            # the above xrange() includes a-z, A-Z, 0-9 and all symbols
+            # since we bypassed a-zA-Z0-9, we got all symbols
+            res = self.__query_char(keyval)
+            if res != "":
+                self.__commit_string(unicode(res,"utf-8"))
+                return True
+            else:
+                pass
+        else:
+            #print "ignored: keyval=0x%x, keycode=0x%x, state=0x%x" % (keyval, keycode, state)
+            pass
+        return False
+    def state_select_dynamic(self, keyval, keycode, state):
+        if keyval == keysyms.Return:
+            self.__commit_string(self.__preedit_string)
+        elif keyval == keysyms.Escape:
+            self.state_transit(self.state_empty)
+        elif keyval == keysyms.BackSpace:
+            self.__preedit_string = self.__preedit_string[:-1]
+            if self.__preedit_string == u"":
+                self.state_transit(self.state_empty)
+            else:
+                self.__lookup_table.clean()
+                self.cloud_query(self.__preedit_string)
+                self.__update_lookup_table()
+                self.__invalidate()
+        elif keyval == keysyms.space:
+            self.__commit_string(self.__lookup_table.get_current_candidate())
+            if self.state_is(self.state_select):
+                self.__sentence_update()
+        elif keyval == keysyms.Left or keyval == keysyms.Right:
+            pass
+        elif keyval >= keysyms._0 and keyval <= keysyms._9:
+            index = keyval - keysyms._1
+            if index < 0:
+                index = 9
+            self.__select_candidate(index)
+        elif keyval == keysyms.minus:
+            self.page_up()
+            self.__update()
+        elif keyval == keysyms.equal:
+            self.page_down()
+            self.__update()
+        elif keyval == keysyms.Left or keyval == keysyms.Right:
+            pass
+        elif keyval in xrange(keysyms.exclam, keysyms.asciitilde+1):
+            # This includes all visible ascii characters: [0x21, 0x7e]
+            self.__preedit_string += unichr(keyval)
+            self.__lookup_table.clean()
+            self.cloud_query(self.__preedit_string)
+            self.__update_lookup_table()
+            self.__invalidate()
+        else:
+            #print "blocked: keyval=0x%x, keycode=0x%x, state=0x%x" % (keyval, keycode, state)
+            pass
+
+        return True
+    def state_empty_static(self, keyval, keycode, state):
         if keyval in xrange(keysyms.a, keysyms.z + 1):
             self.__preedit_string = unichr(keyval)
             self.state_transit(self.state_input)
@@ -100,7 +239,7 @@ class Engine(ibus.EngineBase):
             pass
         return False
     def cloud_query_default(self, pestr):
-        res = mycloud.parsefunc(pestr.encode("utf-8"), "172.16.55.240")
+        res = mycloud.parsefunc(pestr, self.__host, self.__port)
         preedit_len = len(pestr)
         if res != "":
             item = res.split("\n")[0]
@@ -117,7 +256,7 @@ class Engine(ibus.EngineBase):
         ibt.commit_text = pestr
         return ibt
     def cloud_query(self, pestr):
-        res = mycloud.parsefunc(pestr.encode("utf-8"), "172.16.55.240")
+        res = mycloud.parsefunc(pestr, self.__host, self.__port)
         if res != "":
             preedit_len = len(pestr)
             for item in res.split("\n"):
@@ -138,7 +277,7 @@ class Engine(ibus.EngineBase):
                     self.__lookup_table.append_candidate(ibt)
                 except ValueError:
                     pass
-    def state_input(self, keyval, keycode, state):
+    def state_input_static(self, keyval, keycode, state):
         if keyval == keysyms.Return:
             self.__commit_string(self.__preedit_string)
         elif keyval == keysyms.Escape:
@@ -180,7 +319,7 @@ class Engine(ibus.EngineBase):
             self.__commit_string(candidates[index])
             if self.state_is(self.state_select):
                 self.__sentence_update()
-    def state_select(self, keyval, keycode, state):
+    def state_select_static(self, keyval, keycode, state):
         if keyval == keysyms.Return:
             self.__commit_string(self.__preedit_string)
         elif keyval == keysyms.Escape:
@@ -229,7 +368,7 @@ class Engine(ibus.EngineBase):
         return True
 
     def __query_char(self, keyval):
-        res = mycloud.parsefunc(chr(keyval), "172.16.55.240")
+        res = mycloud.parsefunc(chr(keyval), self.__host, self.__port)
         if res != "":
             item = res.split("\n")
             if item:
@@ -286,7 +425,7 @@ class Engine(ibus.EngineBase):
             ibt = ibus.Text("")
             self.update_auxiliary_text(ibt, False)
             self.update_preedit_text(ibt, 0, False)
-        elif self.state_is(self.state_input):
+        elif self.state_is(self.state_input_static):
             attr = ibus.AttrList()
             ibt = ibus.Text(self.__preedit_string, attr)
             self.update_auxiliary_text(ibt, True)
@@ -317,8 +456,22 @@ class Engine(ibus.EngineBase):
     def reset(self):
         pass
 
-    def property_activate(self, prop_name):
-        print "PropertyActivate(%s)" % prop_name
+    def property_activate(self, prop_name, prop_state):
+        try:
+            for item in self.__prop_list:
+                self.state_transit(self.state_empty)
+                if int(prop_state) == 1:
+                    item.state = 0
+                    item.icon = u"/usr/share/ibus-mycloud/icons/prop.svg"
+                    self.set_static_mode(True)
+                else:
+                    item.state = 1
+                    item.icon = u"/usr/share/ibus-mycloud/icons/prop1.svg"
+                    self.set_static_mode(False)
+                self.update_property(item)
+                break
+        except Exception, inst:
+            print type(inst).__name__, inst
 
     def candidate_clicked(self, index, button, state):
         if state == 0 and button == 1:
