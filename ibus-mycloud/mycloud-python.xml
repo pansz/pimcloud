@@ -4,8 +4,8 @@
 	<name>org.freedesktop.IBus.MyCloudPython</name>
 	<description>Personal IM Cloud Python Component</description>
 	<exec>/usr/bin/ibus-engine-mycloud --ibus</exec>
-	<version>1.2.99.20100920</version>
-	<author>Pan, Shi Zhu (pan dot shizhu at gmail dot com)</author>
+	<version>1.2.99.20101010</version>
+	<author>Pan, Shi Zhu </author>
 	<license>GPL</license>
 	<homepage>http://code.google.com/p/pimcloud</homepage>
 	<textdomain>ibus-mycloud</textdomain>
@@ -15,7 +15,7 @@
 			<name>mycloud-python</name>
 			<language>zh</language>
 			<license>GPL</license>
-			<author>Pan, Shi Zhu (pan dot shizhu at gmail dot com)</author>
+			<author>Pan, Shi Zhu </author>
 			<icon>/usr/share/ibus-mycloud/icons/ibus-mycloud.svg</icon>
 			<layout>us</layout>
 			<longname>MyCloud</longname>
