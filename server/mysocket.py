@@ -50,6 +50,7 @@ def tcpslice(sendfunc, data):
 
 def tcpserver(func, port):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.setblocking(1)
     name = 'tcp server'
     try:
         s.bind(('', port))
@@ -129,6 +130,7 @@ def udpslice(sendfunc, data, addr):
 
 def udpserver(func, port):
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.setblocking(1)
     name = 'udp server'
     try:
         s.bind(('', port))
@@ -167,6 +169,7 @@ def udpserver(func, port):
 def tcpsend(data, host, port):
     addr = host, port
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.settimeout(5)
     try:
         s.connect(addr)
     except Exception, inst:
@@ -190,6 +193,7 @@ def tcpsend(data, host, port):
 def udpsend(data, host, port):
     addr = host, port
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.settimeout(5)
     try:
         s.bind(('', 0))
     except Exception, inst:

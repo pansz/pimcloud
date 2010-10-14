@@ -20,9 +20,12 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
+import socket
 import urllib
 import data
 import mypwd
+
+socket.setdefaulttimeout(1)
 
 # 显示 unicode
 def getunicode(code):
@@ -383,8 +386,11 @@ def remote_parse(kbmap, debug):
     #url = "http://web.pinyin.sogou.com/web_ime/get_ajax/%s.key" % kbmap["pinyinstr"]
     url = "http://web.pinyin.sogou.com/api/py?key=938cdfe9e1e39f8dd5da428b1a6a69cb&query="+keyb
     fh = urllib.urlopen(url)
-    remotestr = fh.read()
-    str = urllib.unquote(remotestr)
+    try:
+        remotestr = fh.read()
+        str = urllib.unquote(remotestr)
+    except Exception:
+        str = ""
     """
     try:
         exec(str)
