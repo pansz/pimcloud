@@ -1,0 +1,57 @@
+(This file is considered obsolete)
+
+2010-2-25 Pan, Shi Zhu  <pan.shizhu@gmail.com>
+	* everything: hg 水银仓库创建，此后的提交日志均从 hg 。
+
+2010-2-3 Pan, Shi Zhu  <pan.shizhu@gmail.com>
+	* server: 增加五笔解析相关代码
+	* server: 调整全拼对于几个歧义拼音词组的解析
+
+2010-1-25 Pan, Shi Zhu  <pan.shizhu@gmail.com>
+	* client-src: 当获取大量 socket 数据时，增加对数据溢出的处理
+	* server: 逐字输入 dynamic 模式时，支持显示部分的形码
+	* all: 增加了版权信息描述
+
+2010-1-19 Pan, Shi Zhu  <pan.shizhu@gmail.com>
+	* client-src: 发布 client 端源代码
+	* client: 修改名称为 libvimim
+
+2010-1-18 Pan, Shi Zhu  <pan.shizhu@gmail.com>
+	* qptest: 增加全拼调试信息
+	* algo.py: 增加全拼调试信息
+
+2010-1-15 Pan, Shi Zhu  <pan.shizhu@gmail.com>
+	* libmycloud.so: Linux i686 version of mycloud plugin
+	* algo.py: 解决形码输出无输出限制的问题
+	* data.py: 增加对用户自定义词库 user.txt 的支持
+	* abc?.txt: 解决双拼一对多的别名问题
+
+2010-1-14 Pan, Shi Zhu  <pan.shizhu@gmail.com>
+	* libmycloud.dll: Windows Native version of mycloud plugin
+
+2010-1-12 Pan, Shi Zhu  <pan.shizhu@gmail.com>
+	* mysocket.py: 解决一些异常退出的情况
+	* data.py: 调整标点符号映射表数据
+	* algo.py: 双引号可智能前后匹配
+	* abctest: 缺省打开调试模式
+
+2010-1-11 Pan, Shi Zhu  <pan.shizhu@gmail.com>
+	* quanpin2.txt: 增加 3000 简拼字库
+	* abc2.txt: 增加 3000 简拼字库
+	* appengine.py: 调试了 gae 接口与本地配合。
+	* data.py: 调试了 gae 接口与本地配合。
+	* algo.py: 调试了 gae 接口与本地配合。
+
+2010-1-4  Pan, Shi Zhu  <pan.shizhu@gmail.com>
+	* quanpin?.txt: separated into 4 files
+	* abc?.txt: added 智能双打词库
+	* ms?.txt: added 微软双拼词库
+	* data.py: 增加对 4 类独立词库的解析
+	* algo.py: 增加对不同输入法引擎的处理，增加最大输出码数量设置
+	* 4corner.txt: 增加了几个字
+	* appengine.py: 增加了对微软拼音的处理
+
+2009-12-29  Pan, Shi Zhu  <pan.shizhu@gmail.com>
+
+	* ChangeLog: created the ChangeLog
+
