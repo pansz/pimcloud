@@ -443,25 +443,27 @@ class Engine(ibus.EngineBase):
             res = mycloud.parsefunc(self.__preedit_string, self.__host, self.__port)
             if res != "":
                 self.pre_input = self.__preedit_string
-                self.pre_output = ""
+                pre_output_list = [''] * 11
                 preedit_len = len(self.pre_input)
-                count = self.__pagesize
+                first_flag = True
+                count = 10
                 for item in res.split("\n"):
                     try:
                         text, index, hint = item.split("\t")
-                        index = int(index)
-                        if index < preedit_len:
-                            display_text = text + ".. "
-                        elif hint == "_":
-                            display_text = text + "  "
+                        md = dict(zip("1234567890",range(1,11)))
+                        if first_flag:
+                            pre_output_list[0] = text + "    "
+                            first_flag = False
                         else:
-                            display_text = text + hint + " "
-                        self.pre_output += display_text
+                            index = md.get(hint,-1)
+                            if index >= 0:
+                                pre_output_list[index] = hint + "." + text + "  "
+                                count -= 1
+                                if count <= 0:
+                                    break
                     except ValueError:
                         pass
-                    count -= 1
-                    if count <= 0:
-                        break
+                self.pre_output = "".join(pre_output_list)
             else:
                 self.pre_output = self.__preedit_string
             attr.append(ibus.AttributeForeground(aux_color, 0, len(self.pre_output)))
