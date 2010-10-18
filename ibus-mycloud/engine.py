@@ -271,13 +271,17 @@ class Engine(ibus.EngineBase):
     def cloud_query(self, pestr):
         res = mycloud.parsefunc(pestr, self.__host, self.__port)
         if res != "":
+            pl = len(pestr)
             for item in res.split("\n"):
                 try:
                     text, index, hint = item.split("\t")
                     index = int(index)
                     attr = ibus.AttrList()
                     if self.state_is(self.state_select_dynamic) and hint != "_":
-                        display_str = unicode(text + hint, "utf-8")
+                        if index == pl:
+                            display_str = unicode(text + hint, "utf-8")
+                        else:
+                            display_str = unicode(text, "utf-8")
                     else:
                         display_str = unicode(text, "utf-8")
                     attr.append(ibus.AttributeForeground(lookup_color, 0, len(display_str)))

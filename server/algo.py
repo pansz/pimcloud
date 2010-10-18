@@ -380,39 +380,31 @@ def remote_parse(kbmap, debug):
     if len(ret) > 0:
         return ret
 
-    # TODO: 目前的搜狗云不支持断字符号，暂时用空格代替
     keyb = kbmap["pinyinstr"].replace("'", " ")
-    # check cloud
-    #url = "http://web.pinyin.sogou.com/web_ime/get_ajax/%s.key" % kbmap["pinyinstr"]
-    url = "http://web.pinyin.sogou.com/api/py?key=938cdfe9e1e39f8dd5da428b1a6a69cb&query="+keyb
-    fh = urllib.urlopen(url)
-    try:
-        remotestr = fh.read()
-        str = urllib.unquote(remotestr)
-    except Exception:
-        str = ""
-    """
-    try:
-        exec(str)
-    except Exception, inst:
-        print "Exception at "+kbmap["pinyinstr"], "str='"+ str+ "'",type(inst).__name__, inst
-        return ret
-    for item in ime_query_res.split("+"):
-        myitem = item.rstrip()
-        index = myitem.find('：')
-        if index == -1:
-            continue
-        ret.append((myitem[:index], int(myitem[index+3:])))
-        """
-    if str.startswith("ime_callback"):
-        try:
-            exec("ret = "+str)
-        except Exception, inst:
-            print "Exception at "+keyb, "str='"+ str+ "'",type(inst).__name__, inst
-            ret = []
+    if keyb in data.g_remote_dict:
+        ret = data.g_remote_dict.get(keyb,[])
     else:
-        print "Error at "+keyb, "str='"+ str+ "'"
-        ret = []
+        # check cloud
+        #url = "http://web.pinyin.sogou.com/web_ime/get_ajax/%s.key" % kbmap["pinyinstr"]
+        url = "http://web.pinyin.sogou.com/api/py?key=938cdfe9e1e39f8dd5da428b1a6a69cb&query="+keyb
+        fh = urllib.urlopen(url)
+        try:
+            remotestr = fh.read()
+            str = urllib.unquote(remotestr)
+        except Exception:
+            str = ""
+        if str.startswith("ime_callback"):
+            try:
+                exec("ret = "+str)
+            except Exception, inst:
+                print "Exception at "+keyb, "str='"+ str+ "'",type(inst).__name__, inst
+                ret = []
+        else:
+            print "Error at "+keyb, "str='"+ str+ "'"
+            ret = []
+        if ret != []:
+            data.g_remote_dict[keyb] = ret
+
     if debug:
         ret.append((keyb, -1))
     kbmap["remote_flag"] = True
@@ -631,6 +623,9 @@ def internal_command(cmd, debug):
     elif k == "setgae":
         g_gae = True
         return True
+    elif k == "savecache":
+        data.save_remote_dict()
+        return True
     else:
         return False
 
@@ -827,6 +822,8 @@ def selftest():
     parse("jwfh", debug=True)
     parse("fhae", debug=True)
     parse("aejwfh", debug=True)
+    parse("womfzlaeli", debug=True)
+    parse("__savecache", debug=True)
     print "self-test finished"
 
 if __name__ == "__main__":

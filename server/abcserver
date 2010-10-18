@@ -61,6 +61,8 @@ def main():
     else:
         mysocket.setverbose(True)
         mysocket.tcpserver(socketfunc, default_port)
+    print "Saving cache..."
+    algo.parse("__savecache")
 
 if __name__ == "__main__":
     main()
