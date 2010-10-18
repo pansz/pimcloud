@@ -23,4 +23,5 @@ if __name__ == "__main__":
                     print "%2d"%count,"%s %s"%(k,h)
                 else:
                     print "%2d"%count,"%s%s %s"%(k,keyb[v:],h)
+        algo.parse("__savecache")
 

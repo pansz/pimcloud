@@ -191,6 +191,10 @@ def load_from_file(fname):
         p = {}
     return p
 
+g_remote_dict = load_from_file(os.path.expanduser("~/.mycloud_cache"))
+def save_remote_dict():
+    save_to_file(g_remote_dict, os.path.expanduser("~/.mycloud_cache"))
+
 def create_shuangpin_table(rules):
     sptable = {}
     # generate table for shengmu-yunmu pairs match
@@ -533,6 +537,7 @@ def getkeychars():
 
 g_asctable = string.maketrans("","")
 g_numchars = "0123456789"
+
 
 # set test stuffs
 if __name__ == "__main__":
