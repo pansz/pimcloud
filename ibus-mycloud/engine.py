@@ -62,7 +62,7 @@ def load_config():
             u"host" : u"127.0.0.1",
             u"port" : 10007,
             u"pagesize" : 10,
-            u"static" : True,
+            u"static" : False,
             }
         fp = open(fname, "w")
         json.dump(defaults, fp, sort_keys=True, indent=4)
@@ -309,8 +309,20 @@ class Engine(ibus.EngineBase):
                 self.state_transit(self.state_select)
         elif keyval == keysyms.Left or keyval == keysyms.Right:
             pass
+        elif keyval == keysyms.minus or keyval == keysyms.equal:
+            self.cloud_query(self.__preedit_string)
+            if self.__lookup_table.get_number_of_candidates() > 0:
+                self.__update_lookup_table()
+                self.state_transit(self.state_select)
+                return self.__state(keyval, keycode, state)
         elif keyval in xrange(keysyms.exclam, keysyms.asciitilde+1):
             # This includes all visible ascii characters: [0x21, 0x7e]
+            if self.__preedit_string[-1] in u"0123456789":
+                if keyval < keysyms._0 or keyval > keysyms._9:
+                    ibt = self.cloud_query_default(self.__preedit_string)
+                    self.__commit_string(ibt)
+                    return self.__state(keyval, keycode, state)
+
             self.__preedit_string += unichr(keyval)
             self.__invalidate()
         else:
@@ -461,7 +473,7 @@ class Engine(ibus.EngineBase):
                         else:
                             index = md.get(hint,-1)
                             if index >= 0:
-                                pre_output_list[index] = hint + "." + text + "  "
+                                pre_output_list[index] = text + hint + "  "
                                 count -= 1
                                 if count <= 0:
                                     break
