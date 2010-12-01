@@ -25,7 +25,11 @@ import urllib
 import data
 import mypwd
 
-socket.setdefaulttimeout(1)
+try:
+    socket.setdefaulttimeout(1)
+except Exception:
+    # ignore exception in GAE
+    pass
 
 # 显示 unicode
 def getunicode(code):

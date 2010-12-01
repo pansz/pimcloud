@@ -191,9 +191,13 @@ def load_from_file(fname):
         p = {}
     return p
 
-g_remote_dict = load_from_file(os.path.expanduser("~/.mycloud_cache"))
+try:
+    g_dict_path = os.path.expanduser("~/.mycloud_cache")
+except Exception:
+    g_dict_path = "mycloud_cache"
+g_remote_dict = load_from_file(g_dict_path)
 def save_remote_dict():
-    save_to_file(g_remote_dict, os.path.expanduser("~/.mycloud_cache"))
+    save_to_file(g_remote_dict, g_dict_path)
 
 def create_shuangpin_table(rules):
     sptable = {}
@@ -537,7 +541,6 @@ def getkeychars():
 
 g_asctable = string.maketrans("","")
 g_numchars = "0123456789"
-
 
 # set test stuffs
 if __name__ == "__main__":
