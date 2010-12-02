@@ -79,11 +79,47 @@ def private_encrypt30(str, key):
     pwd = crypt.crypt(str, pwd[3:])
     return pwd
 
+def private_encrypt31(str, key):
+    pwd = crypt.crypt(key, str)
+    pwd = crypt.crypt(str, pwd[3:])
+    pwd = crypt.crypt(key, pwd[3:])
+    return pwd
+
+def private_encrypt40(str, key):
+    str1 = crypt.crypt(str, "40")
+    key1 = crypt.crypt(key, "40")
+    pwd = crypt.crypt(str1, key1)
+    pwd = crypt.crypt(key, pwd[3:])
+    return pwd
+
+def private_encrypt41(str, key):
+    str1 = crypt.crypt(str, "41")
+    key1 = crypt.crypt(key, "41")
+    pwd = crypt.crypt(key1, str1)
+    pwd = crypt.crypt(str, pwd[3:])
+    return pwd
+
+def private_encrypt42(str, key):
+    str2 = crypt.crypt(str, "42")
+    key2 = crypt.crypt(key, "42")
+    pwd = crypt.crypt(str2, key2)
+    pwd = crypt.crypt(key2, pwd[3:])
+    return pwd
+
+def private_encrypt43(str, key):
+    str2 = crypt.crypt(str, "43")
+    key2 = crypt.crypt(key, "43")
+    pwd = crypt.crypt(key2, str2)
+    pwd = crypt.crypt(str2, pwd[3:])
+    return pwd
+
 def public_encrypt(str, key):
     random.seed()
     output = []
     funcs = (private_encrypt11, private_encrypt12, private_encrypt10, 
-            private_encrypt20, private_encrypt21, private_encrypt30)
+            private_encrypt20, private_encrypt21, private_encrypt30,
+            private_encrypt31, private_encrypt40, private_encrypt41,
+            private_encrypt42, private_encrypt43)
     for pe in funcs:
         if pe == private_encrypt11:
             pwd = interlaced(pe(str, key), pe(key, str), True)
