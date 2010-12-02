@@ -111,13 +111,14 @@ class PwdPost(webapp.RequestHandler):
                     op = mypwd.public_encrypt(sp[2], sp[0])
         else:
             op = mypwd.public_encrypt(strpwd, strkey)
-        result = ''
+        resl = []
         x = 0
         for item in op:
-            result = ''.join((result, "%d %s\t%d %s\t%d %s\t%d %s\t%d %s\t%d %s\n" % \
+            resl.append("%02d %s  %02d %s  %02d %s  %02d %s  %02d %s  %02d %s" % \
                 (x, item[0], x+5, item[1], x+10, item[2], \
-                x+15, item[3], x+20, item[4], x+25, item[5])))
+                x+15, item[3], x+20, item[4], x+25, item[5]))
             x += 1
+        result = "\n".join(resl)
         use_template(self, "pwd.html", {
             'arg1' : "",
             'arg2' : "",

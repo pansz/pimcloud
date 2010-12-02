@@ -95,7 +95,7 @@ def public_encrypt(str, key):
         output.append(slice0 + slice1)
     return output
 
-def parse(keyb, debug=False):
+def public_parse(keyb):
     lenkeyb = len(keyb)
     sp = keyb.partition("@")
     if len(sp[0]) == 0:
@@ -104,6 +104,10 @@ def parse(keyb, debug=False):
         op = public_encrypt(KEYSTR, sp[0])
     else:
         op = public_encrypt(sp[2], sp[0])
+    return op
+
+def parse(keyb, debug=False):
+    op = public_parse(keyb)
     output = []
     for y in range(len(op[0])):
         for x in range(1,len(op)):
