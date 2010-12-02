@@ -114,3 +114,17 @@ def parse(keyb, debug=False):
             output.append((op[x][y]+" ","_",lenkeyb))
     return output
 
+def opitem(op, start):
+    x = 0
+    size = len(op) - start
+    resl = []
+    for item in op:
+        if x < start:
+            x += 1
+            continue
+        resl.append("%02d %s  %02d %s  %02d %s  %02d %s  %02d %s  %02d %s" % \
+            (x, item[0], x+size, item[1], x+size*2, item[2], \
+            x+size*3, item[3], x+size*4, item[4], x+size*5, item[5]))
+        x += 1
+    return "\n".join(resl)
+

@@ -4,18 +4,6 @@
 import mypwd
 import sys
 
-def printopitem(op, start):
-    x = 0
-    size = len(op) - start
-    for item in op:
-        if x < start:
-            x += 1
-            continue
-        print "%02d %s  %02d %s  %02d %s  %02d %s  %02d %s  %02d %s" % \
-            (x, item[0], x+size, item[1], x+size*2, item[2], \
-            x+size*3, item[3], x+size*4, item[4], x+size*5, item[5])
-        x += 1
-
 def main():
     argc = len(sys.argv)
     if argc <= 1:
@@ -23,13 +11,13 @@ def main():
             op = mypwd.public_encrypt(mypwd.KEYSTR, "python")
         else:
             op = mypwd.public_encrypt(mypwd.KEYSTR, sys.argv[0])
-        printopitem(op, 0)
+        print mypwd.opitem(op, 0)
     elif argc == 2:
         op = mypwd.public_parse(sys.argv[1])
-        printopitem(op, 1)
+        print mypwd.opitem(op, 1)
     elif argc >= 3:
         op = mypwd.public_encrypt(sys.argv[2], sys.argv[1])
-        printopitem(op, 0)
+        print mypwd.opitem(op, 1)
 
 if __name__ == "__main__":
     main()

@@ -101,6 +101,7 @@ class PwdPost(webapp.RequestHandler):
         if len(strpwd) == 0:
             if len(strkey) == 0:
                 op = mypwd.public_encrypt(mypwd.KEYSTR, "gae")
+                result = mypwd.opitem(op, 0)
             else:
                 sp = strkey.partition("@")
                 if len(sp[0]) == 0:
@@ -109,16 +110,10 @@ class PwdPost(webapp.RequestHandler):
                     op = mypwd.public_encrypt(mypwd.KEYSTR, sp[0])
                 else:
                     op = mypwd.public_encrypt(sp[2], sp[0])
+                result = mypwd.opitem(op, 1)
         else:
             op = mypwd.public_encrypt(strpwd, strkey)
-        resl = []
-        x = 0
-        for item in op:
-            resl.append("%02d %s  %02d %s  %02d %s  %02d %s  %02d %s  %02d %s" % \
-                (x, item[0], x+5, item[1], x+10, item[2], \
-                x+15, item[3], x+20, item[4], x+25, item[5]))
-            x += 1
-        result = "\n".join(resl)
+            result = mypwd.opitem(op, 1)
         use_template(self, "pwd.html", {
             'arg1' : "",
             'arg2' : "",
