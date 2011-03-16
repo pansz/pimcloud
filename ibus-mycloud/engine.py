@@ -30,6 +30,8 @@ import os
 
 aux_color = 0x804000
 lookup_color = 0x004080
+# default is for shuangpin, check this if you want quanpin
+use_quanpin = False
 
 def load_config():
     dname = os.path.expanduser("~/.config/ibus")
@@ -192,9 +194,11 @@ class Engine(ibus.EngineBase):
             if self.__preedit_string == u"":
                 self.state_transit(self.state_empty)
             else:
-                self.__lookup_table.clean()
-                self.cloud_query(self.__preedit_string)
-                self.__update_lookup_table()
+                strlen = len(self.__preedit_string)
+                if (strlen < 5) or (strlen % 2 == 0) or use_quanpin:
+                    self.__lookup_table.clean()
+                    self.cloud_query(self.__preedit_string)
+                    self.__update_lookup_table()
                 self.__invalidate()
         elif keyval == keysyms.space:
             self.__commit_string(self.__lookup_table.get_current_candidate())
@@ -218,11 +222,19 @@ class Engine(ibus.EngineBase):
             if self.cursor_down():
                 self.__update()
         elif keyval in xrange(keysyms.exclam, keysyms.asciitilde+1):
-            # This includes all visible ascii characters: [0x21, 0x7e]
-            self.__preedit_string += self.glyph_dict.get(unichr(keyval), unichr(keyval))
-            self.__lookup_table.clean()
-            self.cloud_query(self.__preedit_string)
-            self.__update_lookup_table()
+            if keyval in xrange(keysyms.a, keysyms.z + 1):
+                self.__preedit_string += self.glyph_dict.get(unichr(keyval), unichr(keyval))
+                strlen = len(self.__preedit_string)
+                if (strlen < 5) or (strlen % 2 == 0) or use_quanpin:
+                    self.__lookup_table.clean()
+                    self.cloud_query(self.__preedit_string)
+                    self.__update_lookup_table()
+            else:
+            # This excludes all visible ascii characters: [0x21, 0x7e]
+                self.__preedit_string += self.glyph_dict.get(unichr(keyval), unichr(keyval))
+                self.__lookup_table.clean()
+                self.cloud_query(self.__preedit_string)
+                self.__update_lookup_table()
             self.__invalidate()
         else:
             # print "blocked: kv=0x%x, kc=0x%x, s=0x%x" % (keyval, keycode, state)
@@ -491,10 +503,11 @@ class Engine(ibus.EngineBase):
             self.update_auxiliary_text(ibt, False)
             self.update_preedit_text(ibt, 0, False)
         elif self.state_is(self.state_input_static):
-            self.__update_auxiliary()
+            preedit_len = len(self.__preedit_string)
+            if (preedit_len < 5) or (preedit_len % 2 == 0) or use_quanpin:
+                self.__update_auxiliary()
             attr = ibus.AttrList()
             ibt = ibus.Text(self.__preedit_string, attr)
-            preedit_len = len(self.__preedit_string)
             attr.append(ibus.AttributeUnderline(pango.UNDERLINE_SINGLE, 0, preedit_len))
             self.update_preedit_text(ibt, preedit_len, True)
         elif self.state_is(self.state_select):
