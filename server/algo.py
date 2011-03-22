@@ -188,7 +188,7 @@ def shuangpin_transform(item, sptable):
     word_count = 0
     alias1 = sptable["__alias1__"]
     alias2 = sptable["__alias2__"]
-    bchar = ""          # work around for new sogou py
+    bchar = "'"         # work around for new sogou py
     while index < lenitem:
         if item[index].islower():
             if item[index] in sptable["__uimode__"]:
@@ -287,22 +287,22 @@ def check_glyph(newoutput, hint, matchword):
     return newoutput, "_"
 
 # 插入中间的非中文输入到返回文字中，并进行附加的形码本地解析
-def process(item, map, rzk):
+def process(item, tmap, rzk):
     unitem = unicode(item,"utf-8")
     wc = len(unitem)            # 本次匹配码长
-    twc = map["word_count"]     # 总期望码长
+    twc = tmap["word_count"]     # 总期望码长
     # 如果搜索返回了大于期望字长的字，则忽略
     if wc > twc:
         return "", ""
-    outlist = [map["itmmap"][0][0], map["itmmap"][0][1]]
+    outlist = [tmap["itmmap"][0][0], tmap["itmmap"][0][1]]
     for i in xrange(wc):
         outlist.append(unitem[i].encode("utf-8"))
-        if map["itmmap"].has_key(i+1):
-            outlist.append(map["itmmap"][i+1][1])
+        if tmap["itmmap"].has_key(i+1):
+            outlist.append(tmap["itmmap"][i+1][1])
     newoutput = "".join(outlist)
     # calculate hint
     hint = "_"
-    matchword = map["itmmap"][twc][0]
+    matchword = tmap["itmmap"][twc][0]
     if wc == 1:
         if rzk.has_key(item):
             hint = rzk[item]
@@ -344,47 +344,9 @@ def ime_callback(str, keyb, dummy):
         ret.append((k,int(v)))
     return ret
 
-# 解析云端数据，同时兼顾本地用户数据
-def remote_parse(kbmap, debug):
-    ret = []
-
-    try:
-        userzk = data.get(data.load_alpha_userzk)
-        pys = kbmap["pinyinstr"]
-        pyl = kbmap["pinyinlist"]
-        ori = kbmap["originput"]
-        wc = kbmap["word_count"]
-        if kbmap["pytype"] == "quanpin":
-            # 按全部解析出的输入判定
-            index = pyl[wc][1]
-            key = ori
-            if key in userzk:
-                for item in userzk[key].split(" "):
-                    if item[0] == "#":
-                        break
-                    ret.append((item, index))
-            # 按带断字符的方式判定
-            key = pys
-            if key in userzk:
-                for item in userzk[key].split(" "):
-                    if item[0] == "#":
-                        break
-                    ret.append((item, index))
-        else:
-            # 按原始输入来检查用户词库，支持不带断字符的双拼原始码用户词库
-            index = pyl[wc][1]
-            key = ori
-            if key in userzk:
-                for item in userzk[key].split(" "):
-                    if item[0] == "#":
-                        break
-                    ret.append((item, index))
-    except Exception:
-        pass
-    if len(ret) > 0:
-        return ret
-
-    keyb = kbmap["pinyinstr"].replace("'", " ")
+def sogou_cloud_check(kbmap):
+    kbpy = kbmap["pinyinstr"]
+    keyb = kbpy.replace("'", "")
     if keyb in data.g_remote_dict:
         ret = data.g_remote_dict.get(keyb,[])
     else:
@@ -409,8 +371,96 @@ def remote_parse(kbmap, debug):
         if ret != []:
             data.g_remote_dict[keyb] = ret
 
+    if len(kbpy) != len(keyb):
+        # has quote
+        qret = []
+        for a in ret:
+            wc = kbmap["word_count"]
+            la = len(unicode(a[0],"utf-8"))
+            if la > wc:
+                la = wc
+            qret.append((a[0], kbmap["pinyinlist"][la][1]))
+        return qret
+    else:
+        return ret
+
+def qq_cloud_check(kbpy):
+    pass
+
+def baidu_cloud_check(kbpy):
+    pass
+
+def google_cloud_check(kbmap):
+    keyb = kbmap["pinyinstr"]
+    if keyb in data.g_remote_dict:
+        ret = data.g_remote_dict.get(keyb,[])
+    else:
+        url = "http://www.google.com/transliterate?tl_app=3&tlqt=1&num=20&langpair=en|zh&text="+keyb
+        fh = urllib.urlopen(url)
+        remotestr = ""
+        try:
+            remotestr = fh.read().replace('"\\u','u"\\u').lstrip("\n")
+            exec("gret = "+remotestr)
+            print type(gret).__name__, repr(gret)
+            ret = []
+            for u in gret[0]['hws']:
+                la = len(u)
+                ret.append((u.encode("utf-8"),kbmap["pinyinlist"][la][1]))
+        except Exception, inst:
+            print "Exception at "+keyb, "str='"+ remotestr+ "'",type(inst).__name__, inst
+            ret = []
+    return ret
+
+# 解析用户本地字典
+def userzk_check(kbmap):
+    ret = []
+    userzk = data.get(data.load_alpha_userzk)
+    pys = kbmap["pinyinstr"]
+    pyl = kbmap["pinyinlist"]
+    ori = kbmap["originput"]
+    wc = kbmap["word_count"]
+    if kbmap["pytype"] == "quanpin":
+        # 按全部解析出的输入判定
+        index = pyl[wc][1]
+        key = ori
+        if key in userzk:
+            for item in userzk[key].split(" "):
+                if item[0] == "#":
+                    break
+                ret.append((item, index))
+        # 按带断字符的方式判定
+        key = pys
+        if key in userzk:
+            for item in userzk[key].split(" "):
+                if item[0] == "#":
+                    break
+                ret.append((item, index))
+    else:
+        # 按原始输入来检查用户词库，支持不带断字符的双拼原始码用户词库
+        index = pyl[wc][1]
+        key = ori
+        if key in userzk:
+            for item in userzk[key].split(" "):
+                if item[0] == "#":
+                    break
+                ret.append((item, index))
+    return ret
+
+# 解析云端数据，同时兼顾本地用户数据
+def remote_parse(kbmap, debug):
+
+    try:
+        ret = userzk_check(kbmap)
+        if len(ret) > 0:
+            return ret
+    except Exception:
+        pass
+
+    # ret = sogou_cloud_check(kbmap)
+    ret = google_cloud_check(kbmap)
+
     if debug:
-        ret.append((keyb, -1))
+        ret.append((kbmap["pinyinstr"], -1))
     kbmap["remote_flag"] = True
     return ret
 
@@ -563,13 +613,13 @@ def traverse_tree(mzk):
     return []
 
 # 解析纯四角号码输入，只允许输入单字。
-def parse_glyph(map):
+def parse_glyph(tmap):
     ret = []
     tzk = data.get(data.load_tree_xmzk)
     rzk = data.get(data.load_reverse_pyzk)
-    xmcode = map["itmmap"][0][0]
-    intermed = map["itmmap"][0][1]
-    wordptr = map[0]
+    xmcode = tmap["itmmap"][0][0]
+    intermed = tmap["itmmap"][0][1]
+    wordptr = tmap[0]
     mzk = tzk
     for k in xmcode:
         if k in mzk:
@@ -639,26 +689,26 @@ def internal_command(cmd, debug):
 def quanpin_parse(keyb, debug):
     pinyin_table = data.get(data.get_py_table)
     pytype = pinyin_table["__type__"]
-    map = quanpin_transform(keyb, pinyin_table)
+    tmap = quanpin_transform(keyb, pinyin_table)
     if debug:
-        print map
+        print tmap
 
-    if map["word_count"] == 0:
+    if tmap["word_count"] == 0:
         result = [("",0)]
-    elif map["word_count"] < 3 and g_gae:
-        result = local_parse_quanpin(map, debug)
-    elif map["word_count"] < 5 and not g_gae:
-        result = local_parse_quanpin(map, debug)
+    elif tmap["word_count"] < 3 and g_gae:
+        result = local_parse_quanpin(tmap, debug)
+    elif tmap["word_count"] < 5 and not g_gae:
+        result = local_parse_quanpin(tmap, debug)
     else:
         # 当远程解析超时或者无结果时，启用本地解析
-        result = remote_parse(map, debug)
+        result = remote_parse(tmap, debug)
         if len(result) <= 1:
-            result = local_parse_quanpin(map, debug)
+            result = local_parse_quanpin(tmap, debug)
 
-    xmcode = map["itmmap"][0][0]
-    if len(xmcode) > 0 and map["word_count"] == 0:
+    xmcode = tmap["itmmap"][0][0]
+    if len(xmcode) > 0 and tmap["word_count"] == 0:
         # 解析纯笔形模式，仅当无任何拼音输入时才进入此模式
-        ret = parse_glyph(map)
+        ret = parse_glyph(tmap)
     else:
         ret = []
         rzk = data.get(data.load_reverse_xmzk)
@@ -668,11 +718,11 @@ def quanpin_parse(keyb, debug):
             if index == -1:
                 ret.append((item, "_", index))
                 continue
-            displayitem, hint = process(item, map, rzk)
+            displayitem, hint = process(item, tmap, rzk)
             if displayitem == "":
                 continue
-            if map.has_key(index):
-                ret.append((displayitem, hint, map[index]))
+            if tmap.has_key(index):
+                ret.append((displayitem, hint, tmap[index]))
             else:
                 ret.append((displayitem, hint, index))
             if len(ret) >= data.g_maxoutput:
@@ -686,33 +736,33 @@ def quanpin_parse(keyb, debug):
 def shuangpin_parse(keyb, debug):
     pinyin_table = data.get(data.get_py_table)
     pytype = pinyin_table["__type__"]
-    map = shuangpin_transform(keyb, pinyin_table)
+    tmap = shuangpin_transform(keyb, pinyin_table)
     if debug:
-        print map
+        print tmap
 
-    if map["word_count"] == 0:
+    if tmap["word_count"] == 0:
         result = [("",0)]
-    elif map["word_count"] < 3 and g_gae:
-        result = local_parse_shuangpin(map, debug)
-    elif map["word_count"] < 5 and not g_gae:
-        result = local_parse_shuangpin(map, debug)
+    elif tmap["word_count"] < 3 and g_gae:
+        result = local_parse_shuangpin(tmap, debug)
+    elif tmap["word_count"] < 5 and not g_gae:
+        result = local_parse_shuangpin(tmap, debug)
         # 三字词本地词库不全
-        if len(result) > 0 and map["word_count"] >= 3:
-            finished = map.get(result[0][1],result[0][1])
+        if len(result) > 0 and tmap["word_count"] >= 3:
+            finished = tmap.get(result[0][1],result[0][1])
             if finished < len(keyb):
-                result2 = remote_parse(map, debug)
+                result2 = remote_parse(tmap, debug)
                 if len(result2) > 1:
                     result = result2
     else:
         # 当远程解析超时或者无结果时，启用本地解析
-        result = remote_parse(map, debug)
+        result = remote_parse(tmap, debug)
         if len(result) <= 1:
-            result = local_parse_shuangpin(map, debug)
+            result = local_parse_shuangpin(tmap, debug)
 
-    xmcode = map["itmmap"][0][0]
-    if len(xmcode) > 0 and map["word_count"] == 0:
+    xmcode = tmap["itmmap"][0][0]
+    if len(xmcode) > 0 and tmap["word_count"] == 0:
         # 解析纯笔形模式，仅当无任何拼音输入时才进入此模式
-        ret = parse_glyph(map)
+        ret = parse_glyph(tmap)
     else:
         ret = []
         rzk = data.get(data.load_reverse_xmzk)
@@ -722,11 +772,11 @@ def shuangpin_parse(keyb, debug):
             if index == -1:
                 ret.append((item, "_", index))
                 continue
-            displayitem, hint = process(item, map, rzk)
+            displayitem, hint = process(item, tmap, rzk)
             if displayitem == "":
                 continue
-            if map.has_key(index):
-                ret.append((displayitem, hint, map[index]))
+            if tmap.has_key(index):
+                ret.append((displayitem, hint, tmap[index]))
             else:
                 ret.append((displayitem, hint, index))
             if len(ret) >= data.g_maxoutput:
