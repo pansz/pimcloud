@@ -359,6 +359,7 @@ def sogou_cloud_check(kbmap):
             str = urllib.unquote(remotestr)
         except Exception:
             str = ""
+        fh.close()
         if str.startswith("ime_callback"):
             try:
                 exec("ret = "+str)
@@ -384,10 +385,38 @@ def sogou_cloud_check(kbmap):
     else:
         return ret
 
-def qq_cloud_check(kbpy):
-    pass
+def qq_cloud_check(kbmap):
+    keyb = kbmap["pinyinstr"]
+    if keyb in data.g_remote_dict:
+        ret = data.g_remote_dict.get(keyb,[])
+    else:
+        # here we use 999 as uid, other IME should use something else and
+        # get the key from http://ime.qq.com/fcgi-bin/getkey?callback=window.QQWebIME.keyback999
+        # where the last 999 should be replaced with new UID between 900 and 998
+        url = "http://ime.qq.com/fcgi-bin/getword?key=3e362ac8ddffd39a084ef6db48314f79&callback=window.QQWebIME.callback999&q="+keyb
+        fh = urllib.urlopen(url)
+        remotestr = ""
+        try:
+            remotestr = fh.read().strip()
+            print repr(remotestr)
+            if remotestr.startswith("window.QQWebIME.callback999"):
+                exec("qret = "+remotestr.replace("window.QQWebIME.callback999(","").rstrip(")"))
+                print type(qret).__name__, repr(qret)
+            ret = []
+            la = len(qret["rs"])
+            for i in range(0,la):
+                idx = int(qret["rsn"][i])
+                if idx in kbmap:
+                    ret.append((qret["rs"][i], idx))
+            if ret != []:
+                data.g_remote_dict[keyb] = ret
+        except Exception, inst:
+            print "Exception at "+keyb, "str='"+ remotestr+ "'",type(inst).__name__, inst
+            ret = []
+        fh.close()
+    return ret
 
-def baidu_cloud_check(kbpy):
+def baidu_cloud_check(kbmap):
     pass
 
 def google_cloud_check(kbmap):
@@ -401,14 +430,16 @@ def google_cloud_check(kbmap):
         try:
             remotestr = fh.read().replace('"\\u','u"\\u').lstrip("\n")
             exec("gret = "+remotestr)
-            print type(gret).__name__, repr(gret)
             ret = []
             for u in gret[0]['hws']:
                 la = len(u)
                 ret.append((u.encode("utf-8"),kbmap["pinyinlist"][la][1]))
+            if ret != []:
+                data.g_remote_dict[keyb] = ret
         except Exception, inst:
             print "Exception at "+keyb, "str='"+ remotestr+ "'",type(inst).__name__, inst
             ret = []
+        fh.close()
     return ret
 
 # 解析用户本地字典
@@ -457,7 +488,7 @@ def remote_parse(kbmap, debug):
         pass
 
     # ret = sogou_cloud_check(kbmap)
-    ret = google_cloud_check(kbmap)
+    ret = qq_cloud_check(kbmap)
 
     if debug:
         ret.append((kbmap["pinyinstr"], -1))
