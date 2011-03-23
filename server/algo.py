@@ -31,6 +31,7 @@ except Exception:
     # ignore exception in GAE
     pass
 
+
 # 显示 unicode
 def getunicode(code):
     lencode = len(code)
@@ -113,7 +114,7 @@ def quanpin_transform(item, qptable):
         # support user ziku, uimode only start at index 0
         if index == 0 and item[index] in qptable["__uimode__"]:
             index += 1
-            if index < lenitem :
+            if index < lenitem:
                 while item[index] != "v":
                     index += 1
                     if index >= lenitem:
@@ -127,7 +128,7 @@ def quanpin_transform(item, qptable):
             end = index+i
             matchstr = item[index:end]
             if matchstr in qptable:
-                # special case for fanguo, which should be fan'guo 
+                # special case for fanguo, which should be fan'guo
                 tempstr = item[end-1:end+1]
                 if tempstr == "gu" or tempstr == "nu" or tempstr == "ni":
                     if matchstr[:-1] in qptable:
@@ -148,7 +149,7 @@ def quanpin_transform(item, qptable):
                         matchstr = matchstr[:-1]
                 ptrmap[len(pinyinstr)] = index
                 pinyinlist.append((matchstr, len(pinyinstr)))
-                pinyinstr += qptable[matchstr] + bchar 
+                pinyinstr += qptable[matchstr] + bchar
 
                 itmmap[word_count] = filter_glyph(item[last_word_ptr:index], qptable)
                 index += i
@@ -297,14 +298,14 @@ def process(item, tmap, rzk):
     outlist = [tmap["itmmap"][0][0], tmap["itmmap"][0][1]]
     for i in xrange(wc):
         outlist.append(unitem[i].encode("utf-8"))
-        if tmap["itmmap"].has_key(i+1):
+        if (i+1) in tmap["itmmap"]:
             outlist.append(tmap["itmmap"][i+1][1])
     newoutput = "".join(outlist)
     # calculate hint
     hint = "_"
     matchword = tmap["itmmap"][twc][0]
     if wc == 1:
-        if rzk.has_key(item):
+        if item in rzk:
             hint = rzk[item]
         else:
             if twc > 1:
@@ -313,20 +314,20 @@ def process(item, tmap, rzk):
     elif wc == 2:
         key1 = unitem[0].encode("utf-8")
         key2 = unitem[1].encode("utf-8")
-        if rzk.has_key(key1) and rzk.has_key(key2):
+        if key1 in rzk and key2 in rzk:
             hint = rzk[key1][0:2] + rzk[key2][0:2]
     elif wc == 3:
         key1 = unitem[0].encode("utf-8")
         key2 = unitem[1].encode("utf-8")
         key3 = unitem[2].encode("utf-8")
-        if rzk.has_key(key1) and rzk.has_key(key2) and rzk.has_key(key3):
+        if key1 in rzk and key2 in rzk and key3 in rzk:
             hint = rzk[key1][0] + rzk[key2][0] + rzk[key3][0:2]
     elif wc >= 4:
         key1 = unitem[0].encode("utf-8")
         key2 = unitem[1].encode("utf-8")
         key3 = unitem[2].encode("utf-8")
         key4 = unitem[-1].encode("utf-8")
-        if rzk.has_key(key1) and rzk.has_key(key2) and rzk.has_key(key3) and rzk.has_key(key4):
+        if key1 in rzk and key2 in rzk and key3 in rzk and key4 in rzk:
             hint = rzk[key1][0] + rzk[key2][0] + rzk[key3][0] + rzk[key4][0]
     # filter words according to the hint
     if len(hint) > 1 and wc == twc:
@@ -375,8 +376,8 @@ def sogou_cloud_check(kbmap):
     if len(kbpy) != len(keyb):
         # has quote
         qret = []
+        wc = kbmap["word_count"]
         for a in ret:
-            wc = kbmap["word_count"]
             la = len(unicode(a[0],"utf-8"))
             if la > wc:
                 la = wc
@@ -431,8 +432,11 @@ def google_cloud_check(kbmap):
             remotestr = fh.read().replace('"\\u','u"\\u').lstrip("\n")
             exec("gret = "+remotestr)
             ret = []
+            wc = kbmap["word_count"]
             for u in gret[0]['hws']:
                 la = len(u)
+                if la > wc:
+                    la = wc
                 ret.append((u.encode("utf-8"),kbmap["pinyinlist"][la][1]))
             if ret != []:
                 data.g_remote_dict[keyb] = ret
@@ -488,7 +492,7 @@ def remote_parse(kbmap, debug):
         pass
 
     # ret = sogou_cloud_check(kbmap)
-    ret = qq_cloud_check(kbmap)
+    ret = google_cloud_check(kbmap)
 
     if debug:
         ret.append((kbmap["pinyinstr"], -1))
@@ -752,7 +756,7 @@ def quanpin_parse(keyb, debug):
             displayitem, hint = process(item, tmap, rzk)
             if displayitem == "":
                 continue
-            if tmap.has_key(index):
+            if index in tmap:
                 ret.append((displayitem, hint, tmap[index]))
             else:
                 ret.append((displayitem, hint, index))
@@ -806,7 +810,7 @@ def shuangpin_parse(keyb, debug):
             displayitem, hint = process(item, tmap, rzk)
             if displayitem == "":
                 continue
-            if tmap.has_key(index):
+            if index in tmap:
                 ret.append((displayitem, hint, tmap[index]))
             else:
                 ret.append((displayitem, hint, index))
@@ -859,14 +863,14 @@ def wubi_parse(keyb, debug):
     return []
 
 parsefunc = {
-        "quanpin" : quanpin_parse,
-        "abc" : shuangpin_parse,
-        "ms" : shuangpin_parse,
-        "nature" : nature_parse,
-        "plusplus" : shuangpin_parse,
-        "purple" : shuangpin_parse,
-        "wubi" : wubi_parse,
-        "pwd" : mypwd.parse,
+        "quanpin": quanpin_parse,
+        "abc": shuangpin_parse,
+        "ms": shuangpin_parse,
+        "nature": nature_parse,
+        "plusplus": shuangpin_parse,
+        "purple": shuangpin_parse,
+        "wubi": wubi_parse,
+        "pwd": mypwd.parse,
         }
 
 # 主要的解析函数，决定解析方式。

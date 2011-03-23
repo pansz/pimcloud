@@ -30,9 +30,9 @@ verbose = False
 # sample server func
 def sample_server_func(indata):
     if indata == 'close':
-        return None # to shutdown the server
+        return None  # to shutdown the server
     elif indata == 'disconnect':
-        return 0    # to disconnect
+        return 0     # to disconnect
     elif indata == 'hello':
         return "acknowledgement"
     else:
@@ -61,11 +61,11 @@ def tcpserver(func, port):
         return
     if verbose:
         print name,'at port', port
-    server_close = False;
+    server_close = False
     try:
         while True:
-            s.listen(1)			# 服务器的侦听连接
-            conn, addr = s.accept()	# 接收一个新的 tcp 连接会话
+            s.listen(1)                 # 服务器的侦听连接
+            conn, addr = s.accept()     # 接收一个新的 tcp 连接会话
             if verbose:
                 print name,'connected to', addr
             cachedata = ""
@@ -106,10 +106,10 @@ def tcpserver(func, port):
                         tcpslice(conn.send, senddata)
                 else:
                     conn.send('\n')
-            conn.close()		# 关闭该 tcp 连接
+            conn.close()                # 关闭该 tcp 连接
             if verbose:
                 print name,'closed connection to', addr
-            if server_close:		# 关闭服务器的侦听连接
+            if server_close:            # 关闭服务器的侦听连接
                 break
     except BaseException, inst:
         print name, type(inst).__name__, ":", inst

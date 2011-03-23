@@ -84,16 +84,16 @@ class PwdTool(webapp.RequestHandler):
 
 class AbcPost(webapp.RequestHandler):
     def get(self):
-        use_template(self, "pim.html", { })
+        use_template(self, "pim.html", {})
     def post(self):
-        use_template(self, "pim.html", { })
+        use_template(self, "pim.html", {})
 
 class PwdPost(webapp.RequestHandler):
     def get(self):
         use_template(self, "pwd.html", {
-            'arg1' : '',
-            'arg2' : '',
-            'result' : '',
+            'arg1': '',
+            'arg2': '',
+            'result': '',
             })
     def post(self):
         strkey = self.request.get("arg1")

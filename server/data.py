@@ -25,7 +25,7 @@ import string
 import os.path
 import cPickle
 
-# list of all valid pinyin, don't add other pinyin to this list, 
+# list of all valid pinyin, don't add other pinyin to this list,
 # otherwise, shuangpin will break miserably
 pinyin_list = (
     "'a", "'ai", "'an", "'ang", "'ao", 'ba', 'bai', 'ban', 'bang', 'bao',
@@ -153,13 +153,13 @@ imodemap = {
         "m" : "米"
         }
 
-g_cache = {} 
+g_cache = {}
 # 全局缓存
 def get(func):
     global g_cache
-    if not g_cache.has_key(g_mode):
+    if not g_mode in g_cache:
         g_cache[g_mode] = {}
-    if not g_cache[g_mode].has_key(func):
+    if not func in g_cache[g_mode]:
         g_cache[g_mode][func] = func()
     return g_cache[g_mode][func]
 
@@ -209,18 +209,18 @@ def create_shuangpin_table(rules):
         else:
             shengmu = key[0]
             yunmu = key[1:]
-        if rules[0].has_key(shengmu):
+        if shengmu in rules[0]:
             shuangpin_shengmu = rules[0][shengmu]
         else:
             print "error", shengmu, "not found"
             continue
-        if rules[1].has_key(yunmu):
+        if yunmu in rules[1]:
             shuangpin_yunmu = rules[1][yunmu]
         else:
             print "error", yunmu, "not found"
             continue
         sp1 = shuangpin_shengmu+shuangpin_yunmu
-        if sptable.has_key(sp1):
+        if sp1 in sptable:
             print "error", shengmu, yunmu, "=", sp1, "duplicate with", sptable[sp1]
         else:
             if key[0] == "'":
@@ -352,7 +352,7 @@ def load_reverse_zk(fname):
             items = line[:-1].split(" ")
             key = items[0]
             for item in items[1:]:
-                #if rzk.has_key(item):
+                #if item in rzk:
                     #print "duplicated", item, "with", rzk[item], 'and', key
                 rzk[item] = key
     finally:
@@ -367,7 +367,7 @@ def load_unique_zk(fname):
         for line in f:
             items = line[:-1].split(" ")
             key = items[0]
-            #if rzk.has_key(key):
+            #if key in rzk:
                 #print "duplicated", key, "with", rzk[key], 'and', item
             rzk[key] = items[1]
     finally:
@@ -383,7 +383,7 @@ def load_tree_zk(fname):
             items = line[:-1].split(" ")
             mzk = tzk
             for k in items[0]:
-                if not mzk.has_key(k):
+                if not k in mzk:
                     mzk[k] = {}
                 lzk, mzk = mzk, mzk[k]
             key = items[0][-1]
@@ -554,4 +554,3 @@ if __name__ == "__main__":
             save_to_file(get_shuangpin_table(sys.argv[1]), 'pinyin_table.p')
         else:
             print "invalid rule name, valid ones:\n\t", sp_rule_table
-
