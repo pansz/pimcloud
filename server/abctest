@@ -1,0 +1,27 @@
+#!/usr/bin/env python
+# coding=utf-8
+
+import algo
+import sys
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print "no argument"
+    else:
+        #print __file__
+        algo.parse("__setmode=abc")
+        keyb = sys.argv[1]
+        ret = algo.parse(keyb, debug=True)
+        #ret = algo.parse(keyb)
+        if len(ret) > 0:
+            maxlen = len(ret[0][0])
+            count = 0
+            for k,h,v in ret:
+                padding = (maxlen - len(k))/3*2
+                count += 1
+                if v == -1:
+                    print "%2d"%count,"%s %s"%(k,h)
+                else:
+                    print "%2d"%count,"%s%s %s"%(k,keyb[v:],h)
+        algo.parse("__savecache")
+

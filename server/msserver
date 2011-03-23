@@ -1,0 +1,67 @@
+#!/usr/bin/env python
+# coding=utf-8
+"""
+    ms server portal for mycloud server
+
+    Copyright (C) 2010  Pan, Shi Zhu
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+"""
+
+import algo
+import sys
+import os
+import mysocket
+
+default_port = 10007
+
+def forkserver(func1, func2, port):
+    pid = os.fork()
+    if pid == 0:
+        func1(func2, port)
+    else:
+        pass
+
+def socketfunc(indata):
+    try:
+        str = indata.decode("base64")
+    except Exception:
+        return ""
+    if str != "":
+        output = ""
+        for k,h,v in algo.parse(str):
+            output += "%s\t%s\t%s\n" % (k,v,h.replace(" ", "_"))
+        return output.encode("base64")
+    else:
+        return ""
+
+def main():
+    try:
+        import psyco
+        psyco.full()
+    except ImportError:
+        pass
+
+    algo.parse("__setmode=ms")
+    if len(sys.argv) > 1 and sys.argv[1] == "-b":
+        mysocket.setverbose(False)
+        forkserver(mysocket.tcpserver, socketfunc, default_port)
+    else:
+        mysocket.setverbose(True)
+        mysocket.tcpserver(socketfunc, default_port)
+
+if __name__ == "__main__":
+    main()
+
