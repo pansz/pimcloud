@@ -338,9 +338,9 @@ def process(item, tmap, rzk):
         return "", ""
     #return newoutput, hint
 
-def ime_callback(str, keyb, dummy):
+def ime_callback(istr, keyb, dummy):
     ret = []
-    for item in str.split("\t+"):
+    for item in istr.split("\t+"):
         k,h,v = item.partition("：")
         ret.append((k,int(v)))
     return ret
@@ -357,18 +357,18 @@ def sogou_cloud_check(kbmap):
         fh = urllib.urlopen(url)
         try:
             remotestr = fh.read()
-            str = urllib.unquote(remotestr)
+            sstr = urllib.unquote(remotestr)
         except Exception:
-            str = ""
+            sstr = ""
         fh.close()
-        if str.startswith("ime_callback"):
+        if sstr.startswith("ime_callback"):
             try:
-                exec("ret = "+str)
+                exec("ret = "+sstr)
             except Exception, inst:
-                print "Exception at "+keyb, "str='"+ str+ "'",type(inst).__name__, inst
+                print "Exception at "+keyb, "str='"+ sstr+ "'",type(inst).__name__, inst
                 ret = []
         else:
-            print "Error at "+keyb, "str='"+ str+ "'"
+            print "Error at "+keyb, "str='"+ sstr+ "'"
             ret = []
         if ret != []:
             data.g_remote_dict[keyb] = ret
@@ -418,7 +418,32 @@ def qq_cloud_check(kbmap):
     return ret
 
 def baidu_cloud_check(kbmap):
-    pass
+    keyb = kbmap["pinyinstr"]
+    if False:
+        ret = data.g_remote_dict.get(keyb,[])
+    else:
+        url = "http://olime.baidu.com/py?py="+keyb+"&rn=0&pn=20&t=1294821263957"
+        fh = urllib.urlopen(url)
+        remotestr = ""
+        try:
+            remotestr = fh.read()
+            exec("bret = "+remotestr)
+            ret = []
+            wc = kbmap["word_count"]
+            for u in bret[0]:
+                txt = u[0].decode("gbk")
+                la = len(txt)
+                if la > wc:
+                    la = wc
+                ret.append((txt.encode("utf-8"), kbmap["pinyinlist"][la][1]))
+            if ret != []:
+                data.g_remote_dict[keyb] = ret
+        except Exception, inst:
+            print "Exception at "+keyb, "str='"+ remotestr+ "'",type(inst).__name__, inst
+            ret = []
+        fh.close()
+        pass
+    return ret
 
 def google_cloud_check(kbmap):
     keyb = kbmap["pinyinstr"]
@@ -492,7 +517,8 @@ def remote_parse(kbmap, debug):
         pass
 
     # ret = sogou_cloud_check(kbmap)
-    ret = google_cloud_check(kbmap)
+    ret = baidu_cloud_check(kbmap)
+    #ret = google_cloud_check(kbmap)
 
     if debug:
         ret.append((kbmap["pinyinstr"], -1))
