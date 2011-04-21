@@ -422,7 +422,7 @@ def baidu_cloud_check(kbmap):
     if False:
         ret = data.g_remote_dict.get(keyb,[])
     else:
-        url = "http://olime.baidu.com/py?py="+keyb+"&rn=0&pn=20&t=1294821263957"
+        url = "http://olime.baidu.com/py?py="+keyb+"&rn=0&pn=30&t=1294821263957"
         fh = urllib.urlopen(url)
         remotestr = ""
         try:
@@ -450,7 +450,7 @@ def google_cloud_check(kbmap):
     if keyb in data.g_remote_dict:
         ret = data.g_remote_dict.get(keyb,[])
     else:
-        url = "http://www.google.com/transliterate?tl_app=3&tlqt=1&num=20&langpair=en|zh&text="+keyb
+        url = "http://www.google.com/transliterate?tl_app=3&tlqt=1&num=30&langpair=en|zh&text="+keyb
         fh = urllib.urlopen(url)
         remotestr = ""
         try:
