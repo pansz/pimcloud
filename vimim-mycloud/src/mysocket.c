@@ -116,9 +116,13 @@ int win32_geturl(char *ret, const char *url)
     if (hInet == NULL)
         goto myerror0;
 
+    unsigned long timeout; /* timeout in ms */
+    timeout = 2000;
+    InternetSetOption(hInet, INTERNET_OPTION_RECEIVE_TIMEOUT, &timeout, sizeof timeout);
     HINTERNET hUrl = InternetOpenUrl(hInet,url,NULL,0,0,0);
     if (hUrl == NULL)
         goto myerror1;
+    InternetSetOption(hUrl, INTERNET_OPTION_RECEIVE_TIMEOUT, &timeout, sizeof timeout);
     ret[0] = '\0';
     for (int i = OUTPUT_BUFFERS; ;i-- ) {
         char buf[BUFSIZ];
