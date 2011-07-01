@@ -64,17 +64,19 @@
         需要把 server 服务程序的名称加上 .py ，然后双击启动该程序，并选择运行程序。
         </li>
         <li>在 vimrc 中设置 let
-        g:vimim_cloud_plugin=$HOME."/.vim/plugin/mycloud/mycloud"<br>
+        g:vimim_mycloud="app:".$HOME."/.vim/plugin/mycloud/mycloud"<br>
         注意这里可以带一个 IP 地址作为参数，允许连接到局域网内的其他服务器。<br>
-        例如：let g:vimim_cloud_plugin=$HOME."/.vim/plugin/mycloud/mycloud 192.168.0.1"<br>
+        例如：let g:vimim_mycloud="app:".$HOME."/.vim/plugin/mycloud/mycloud:192.168.0.1"<br>
         如果你使用其他语言制作解析器，例如 perl，可以写成如下形式：<br>
-        let g:vimim_cloud_plugin="perl ".$HOME."/.vim/plugin/mycloud/mycloud"<br>
+        let g:vimim_mycloud="app:perl:".$HOME."/.vim/plugin/mycloud/mycloud"<br>
+        </li>
+        <li>g:vimim_mycloud 也可以设定为 dll: 和 py: 等形式，参见 vimim 的帮助文档 
         </li>
         <li>启动 vim </li>
         <h2>远程插件</h2>
         如果你访问 appspot.com 站点的速度比较理想，也可以直接使用远程插件。
         使用方法如下：
-        <li>在 vimrc 中设置 g:vimim_cloud_pim=http://pim-cloud.appspot.com/??
+        <li>在 vimrc 中设置 g:vimim_mycloud="http://pim-cloud.appspot.com/??"
         ，其中 ?? 是输入法简称，参见下节。</li>
         <li>启动 vim </li>
         <h2>制作自己的输入法插件</h2>

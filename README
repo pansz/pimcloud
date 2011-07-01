@@ -17,7 +17,6 @@ About server:
 
     你可以编辑 user.txt 用于自定义词库，该文件的格式为：
     每行以英文字母开头，后面使用空格分隔每个字符，结尾使用 Unix 行结尾。
-    词库文件无须象 vimim 词库文件中一样 sort u，但是不介意您进行排序。
 
     注意，与 vimim 不同的是，本词库必须使用 unix 行结束符（在 vim 中 :set ff=unix）。
 
@@ -25,6 +24,9 @@ About server:
 
 About vimim-mycloud:
     这是是给 vimim 准备的客户端。
+    目前 vimim 已经内置了 python 版本 mycloud 客户端，
+    如果 vim 编译了 python 支持并且你的系统中安装有 python，则可以无须插件使用。
+    如果你没有 python 或者 vim 没有 python 支持，也可以安装下列插件使用。
 
     libmycloud.dll 为 Windows 使用
 
@@ -46,7 +48,7 @@ About vimim-mycloud:
 
 About ibus-mycloud:
 
-    这是给 ibus 作为客户端的。
+    这是给 ibus 作为客户端的。目前已经完全可用，请注意使用 ibus 的最新版本。
     他没有依赖，只要有 ibus ，直接 make install 即可。
     make 命令的缺省目标用于调试，一般不用。
 
