@@ -234,9 +234,9 @@ if __name__ == "__main__":
     if len(sys.argv) == 1:
         pass
     elif sys.argv[1] == "tcpserver":
-        forkserver(tcpserver, sample_server_func)
+        tcpserver(sample_server_func, DEFAULT_PORT)
     elif sys.argv[1] == "udpserver":
-        forkserver(udpserver, sample_server_func)
+        udpserver(sample_server_func, DEFAULT_PORT)
     elif sys.argv[1] == "tcpclient":
         sample_client_func(tcpsend)
     elif sys.argv[1] == "udpclient":

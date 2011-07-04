@@ -1,0 +1,66 @@
+#!/usr/bin/env python
+# coding: utf-8
+"""
+    log test client for vim script netlog.vim
+
+    Copyright (C) 2011  Pan, Shi Zhu
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+"""
+
+import sys
+import socket
+
+DEFAULT_PORT = 10007
+BUFSIZE = 1024
+
+def udpslice(sendfunc, data, addr):
+    senddata = data
+    while len(senddata) >= BUFSIZE:
+        sendfunc(senddata[0:BUFSIZE], addr)
+        senddata = senddata[BUFSIZE:]
+    if senddata[-1:] == "\n":
+        sendfunc(senddata, addr)
+    else:
+        sendfunc(senddata+"\n", addr)
+
+def udpsend(data, host, port):
+    addr = host, port
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.settimeout(5)
+    try:
+        s.bind(('', 0))
+    except Exception, inst:
+        s.close()
+    for item in data.split("\n"):
+        if item == "":
+            continue
+        udpslice(s.sendto, item, addr)
+    s.close()
+
+def sample_client_func(prot, host="172.16.55.60", port=DEFAULT_PORT):
+    try:
+        while True:
+            line = sys.stdin.readline()
+            if not line:
+                break
+            print 'sent request (%s) to %s ' % (line[:-1], host)
+            prot(line, host, port)
+    except KeyboardInterrupt:
+        pass
+    print "client exit"
+
+if __name__ == "__main__":
+    sample_client_func(udpsend)
