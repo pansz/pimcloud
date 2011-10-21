@@ -20,7 +20,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-import socket
+import socket, time
 
 DEFAULT_PORT = 10007
 BUFSIZE = 1024
@@ -57,25 +57,36 @@ def udpserver(func, port=DEFAULT_PORT):
         print name, "start fail:", inst
         return
     print name,'on port', port
-    while True:
-        data, addr = s.recvfrom(BUFSIZE)
-        data = data[:-1]
-        print '%r: %s' % (addr, data)
-        if func:
-            try:
-                ret = func(data)
-            except Exception:
-                s.sendto('\n', addr)
-                continue
-            if ret == None:
-                s.sendto('server closed\n', addr)
-                break
-            elif ret == 0:
-                pass
+    try:
+        while True:
+            data, addr = s.recvfrom(BUFSIZE)
+            lend = data[-1:]
+            while lend != '\n':
+                data1, addr = s.recvfrom(BUFSIZE)
+                lend = data1[-1:]
+                data = data + data1
+
+            data = data[:-1]
+            ip = '.'.join(str(addr[0]).split('.')[2:])
+            print '%s %s %s' % (ip, time.strftime('%H:%M:%S'), data)
+
+            if func:
+                try:
+                    ret = func(data)
+                except Exception:
+                    s.sendto('\n', addr)
+                    continue
+                if ret == None:
+                    s.sendto('server closed\n', addr)
+                    break
+                elif ret == 0:
+                    pass
+                else:
+                    s.sendto('\n', addr)
             else:
                 s.sendto('\n', addr)
-        else:
-            s.sendto('\n', addr)
+    except KeyboardInterrupt:
+        print
     s.close()
     print name,"exit"
 
