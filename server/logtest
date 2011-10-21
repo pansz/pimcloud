@@ -50,7 +50,7 @@ def udpsend(data, host, port):
         udpslice(s.sendto, item, addr)
     s.close()
 
-def sample_client_func(prot, host="172.16.55.60", port=DEFAULT_PORT):
+def sample_client_func(prot, host="localhost", port=DEFAULT_PORT):
     try:
         while True:
             line = sys.stdin.readline()
