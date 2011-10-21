@@ -404,10 +404,8 @@ def qq_cloud_check(kbmap):
             remotestr = ""
             try:
                 remotestr = fh.read().strip()
-                print repr(remotestr)
                 if remotestr.startswith("window.QQWebIME.callback999"):
                     exec("qret = "+remotestr.replace("window.QQWebIME.callback999(","").rstrip(")"))
-                    print type(qret).__name__, repr(qret)
                 ret = []
                 la = len(qret["rs"])
                 for i in range(0,la):
@@ -528,8 +526,8 @@ def remote_parse(kbmap, debug):
     except Exception:
         pass
 
-    #ret = sogou_cloud_check(kbmap)
-    ret = qq_cloud_check(kbmap)
+    ret = sogou_cloud_check(kbmap)
+    #ret = qq_cloud_check(kbmap)
     #ret = baidu_cloud_check(kbmap)
     #ret = google_cloud_check(kbmap)
 
