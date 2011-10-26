@@ -526,10 +526,14 @@ def remote_parse(kbmap, debug):
     except Exception:
         pass
 
-    ret = sogou_cloud_check(kbmap)
+    dt = socket.getdefaulttimeout()
+    socket.setdefaulttimeout(2)
+    #ret = sogou_cloud_check(kbmap)
     #ret = qq_cloud_check(kbmap)
     #ret = baidu_cloud_check(kbmap)
-    #ret = google_cloud_check(kbmap)
+    ret = google_cloud_check(kbmap)
+
+    socket.setdefaulttimeout(dt)
 
     if debug:
         ret.append((kbmap["pinyinstr"], -1))
