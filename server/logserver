@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 """
-    log server for vim script netlog.vim
+    log server for netlog
 
     Copyright (C) 2011  Pan, Shi Zhu
 
@@ -26,15 +26,10 @@ DEFAULT_PORT = 10007
 BUFSIZE = 1024
 
 # sample server func
-def sample_server_func(indata):
-    if indata == '__close':
-        return None  # to shutdown the server
-    elif indata == '__disconnect':
-        return 0     # to disconnect
-    elif indata == '__hello':
-        return "acknowledgement"
-    else:
-        return 0
+def sample_server_func(indata, fromaddr):
+    ip = '.'.join(str(fromaddr[0]).split('.')[2:])
+    print '%s %s %s' % (ip, time.strftime('%H:%M:%S'), indata)
+    return 0
 
 def udpslice(sendfunc, data, addr):
     senddata = data
@@ -67,12 +62,10 @@ def udpserver(func, port=DEFAULT_PORT):
                 data = data + data1
 
             data = data[:-1]
-            ip = '.'.join(str(addr[0]).split('.')[2:])
-            print '%s %s %s' % (ip, time.strftime('%H:%M:%S'), data)
 
             if func:
                 try:
-                    ret = func(data)
+                    ret = func(data, addr)
                 except Exception:
                     s.sendto('\n', addr)
                     continue
