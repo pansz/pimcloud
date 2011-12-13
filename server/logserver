@@ -20,7 +20,14 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-import socket, time
+import socket, time, datetime
+import sys, os
+#sys.path.insert(0, os.path.abspath(os.curdir))
+sys.path.insert(0, "/home/poet/django/mysite")
+from django.core.management import setup_environ
+import settings
+setup_environ(settings)
+from mysite.polls.models import NetLog
 
 DEFAULT_PORT = 10007
 BUFSIZE = 1024
@@ -29,6 +36,8 @@ BUFSIZE = 1024
 def sample_server_func(indata, fromaddr):
     ip = '.'.join(str(fromaddr[0]).split('.')[2:])
     print '%s %s %s' % (ip, time.strftime('%H:%M:%S'), indata)
+    log = NetLog(ip=fromaddr[0], time=datetime.datetime.now(), content=indata)
+    log.save()
     return 0
 
 def udpslice(sendfunc, data, addr):
@@ -49,9 +58,9 @@ def udpserver(func, port=DEFAULT_PORT):
         s.bind(('', port))
     except Exception, inst:
         s.close()
-        print name, "start fail:", inst
+        print '::1', name, "start fail:", inst
         return
-    print name,'on port', port
+    print '::1', name,'on port', port
     try:
         while True:
             data, addr = s.recvfrom(BUFSIZE)
@@ -66,7 +75,8 @@ def udpserver(func, port=DEFAULT_PORT):
             if func:
                 try:
                     ret = func(data, addr)
-                except Exception:
+                except Exception, e:
+                    print '::1',type(e).__name__, e
                     s.sendto('\n', addr)
                     continue
                 if ret == None:
@@ -81,7 +91,7 @@ def udpserver(func, port=DEFAULT_PORT):
     except KeyboardInterrupt:
         print
     s.close()
-    print name,"exit"
+    print '::1', name,"exit"
 
 if __name__ == "__main__":
     udpserver(sample_server_func)
