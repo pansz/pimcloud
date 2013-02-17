@@ -25,6 +25,8 @@ import urllib
 import urllib2
 import data
 import mypwd
+import sys
+import traceback
 
 try:
     socket.setdefaulttimeout(1)
@@ -470,14 +472,19 @@ def google_cloud_check(kbmap):
                     la = len(u)
                     if la > wc:
                         la = wc
-                    ret.append((u.encode("utf-8"),kbmap["pinyinlist"][la][1]))
+                    if isinstance(u, unicode):
+                        txt = u.encode("utf-8")
+                    else:
+                        txt = u
+                    ret.append((txt, kbmap["pinyinlist"][la][1]))
                 if ret != []:
                     data.g_remote_dict[keyb] = ret
             except Exception, inst:
                 print "Exception at "+keyb, "str='"+ remotestr+ "'",type(inst).__name__, inst
                 ret = []
             fh.close()
-        except Exception:
+        except Exception, inst:
+            print "Exception", type(inst).__name__, inst
             ret = []
     return ret
 
