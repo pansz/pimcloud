@@ -24,6 +24,13 @@ import crypt, random, sys
 
 KEYSTR = "poet"
 
+def my_crypt(a_key, a_salt):
+    if len(a_salt) < 2:
+        salt = a_salt + "A"
+    else:
+        salt = a_salt
+    return crypt.crypt(a_key, salt)
+
 def interlaced(p0, p1, random_interlace):
     putc = ""
     p0len = len(p0)
@@ -46,74 +53,74 @@ def reinterlaced(key):
         putc += key[i]
     return putc
 
-def private_encrypt10(str, key):
-    return crypt.crypt(str,key)
+def private_encrypt10(astr, key):
+    return my_crypt(astr,key)
 
-def private_encrypt11(str, key):
-    fkey = key[0]
-    pwd = crypt.crypt(str, fkey)
-    pwd = crypt.crypt(key, pwd[1:])
+def private_encrypt11(astr, key):
+    fkey = key[0:1]
+    pwd = my_crypt(astr, fkey)
+    pwd = my_crypt(key, pwd[1:])
     for i in range(random.randint(0,3)):
-        pwd = crypt.crypt(str, pwd[1:])
+        pwd = my_crypt(astr, pwd[1:])
     return pwd
 
-def private_encrypt12(str, key):
+def private_encrypt12(astr, key):
     fkey = key[0]
-    pwd = crypt.crypt(str, fkey)
-    pwd = crypt.crypt(key, pwd[1:])
+    pwd = my_crypt(astr, fkey)
+    pwd = my_crypt(key, pwd[1:])
     return pwd
 
-def private_encrypt20(str, key):
-    pwd = crypt.crypt(str, key)
-    pwd = crypt.crypt(key, pwd[2:])
+def private_encrypt20(astr, key):
+    pwd = my_crypt(astr, key)
+    pwd = my_crypt(key, pwd[2:])
     return pwd
 
-def private_encrypt21(str, key):
-    pwd = crypt.crypt(str, key)
-    pwd = crypt.crypt(str, pwd[2:])
+def private_encrypt21(astr, key):
+    pwd = my_crypt(astr, key)
+    pwd = my_crypt(astr, pwd[2:])
     return pwd
 
-def private_encrypt30(str, key):
-    pwd = crypt.crypt(str, key)
-    pwd = crypt.crypt(key, pwd[3:])
-    pwd = crypt.crypt(str, pwd[3:])
+def private_encrypt30(astr, key):
+    pwd = my_crypt(astr, key)
+    pwd = my_crypt(key, pwd[3:])
+    pwd = my_crypt(astr, pwd[3:])
     return pwd
 
-def private_encrypt31(str, key):
-    pwd = crypt.crypt(key, str)
-    pwd = crypt.crypt(str, pwd[3:])
-    pwd = crypt.crypt(key, pwd[3:])
+def private_encrypt31(astr, key):
+    pwd = my_crypt(key, astr)
+    pwd = my_crypt(astr, pwd[3:])
+    pwd = my_crypt(key, pwd[3:])
     return pwd
 
-def private_encrypt40(str, key):
-    str1 = crypt.crypt(str, "40")
-    key1 = crypt.crypt(key, "40")
-    pwd = crypt.crypt(str1, key1)
-    pwd = crypt.crypt(key, pwd[3:])
+def private_encrypt40(astr, key):
+    str1 = my_crypt(astr, "40")
+    key1 = my_crypt(key, "40")
+    pwd = my_crypt(str1, key1)
+    pwd = my_crypt(key, pwd[3:])
     return pwd
 
-def private_encrypt41(str, key):
-    str1 = crypt.crypt(str, "41")
-    key1 = crypt.crypt(key, "41")
-    pwd = crypt.crypt(key1, str1)
-    pwd = crypt.crypt(str, pwd[3:])
+def private_encrypt41(astr, key):
+    str1 = my_crypt(astr, "41")
+    key1 = my_crypt(key, "41")
+    pwd = my_crypt(key1, str1)
+    pwd = my_crypt(astr, pwd[3:])
     return pwd
 
-def private_encrypt42(str, key):
-    str2 = crypt.crypt(str, "42")
-    key2 = crypt.crypt(key, "42")
-    pwd = crypt.crypt(str2, key2)
-    pwd = crypt.crypt(key2, pwd[3:])
+def private_encrypt42(astr, key):
+    str2 = my_crypt(astr, "42")
+    key2 = my_crypt(key, "42")
+    pwd = my_crypt(str2, key2)
+    pwd = my_crypt(key2, pwd[3:])
     return pwd
 
-def private_encrypt43(str, key):
-    str2 = crypt.crypt(str, "43")
-    key2 = crypt.crypt(key, "43")
-    pwd = crypt.crypt(key2, str2)
-    pwd = crypt.crypt(str2, pwd[3:])
+def private_encrypt43(astr, key):
+    str2 = my_crypt(astr, "43")
+    key2 = my_crypt(key, "43")
+    pwd = my_crypt(key2, str2)
+    pwd = my_crypt(str2, pwd[3:])
     return pwd
 
-def public_encrypt(str, key):
+def public_encrypt(astr, key):
     random.seed()
     output = []
     funcs = (private_encrypt11, private_encrypt12, private_encrypt10, 
@@ -122,9 +129,9 @@ def public_encrypt(str, key):
             private_encrypt42, private_encrypt43)
     for pe in funcs:
         if pe == private_encrypt11:
-            pwd = interlaced(pe(str, key), pe(key, str), True)
+            pwd = interlaced(pe(astr, key), pe(key, astr), True)
         else:
-            pwd = interlaced(pe(str, key), pe(key, str), False)
+            pwd = interlaced(pe(astr, key), pe(key, astr), False)
         slice0 = pwd[0:8], pwd[8:16], pwd[16:24]
         pwd = reinterlaced(pwd)
         slice1 = pwd[0:8], pwd[8:16], pwd[16:24]
